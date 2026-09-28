@@ -1,0 +1,1302 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Globe Lernplattform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  color-scheme: light;
+  --bg:#EDEFEA; --surface:#F8F9F5; --surface-2:#E3E7E0; --ink:#1C2320; --muted:#56625C; --line:#CDD4CC;
+  --accent:#1F5E4B; --accent-soft:#D5E6DD; --accent-ink:#FFFFFF;
+  --gold:#8A6212; --gold-soft:#F1E6C8;
+  --good:#2C6B39; --good-soft:#D9EBD9; --bad:#9B2C2C; --bad-soft:#F3DADA;
+  --display:"IM Fell English", "Iowan Old Style", Georgia, serif;
+  --body:"Alegreya Sans", "Segoe UI", system-ui, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme: dark;
+    --bg:#111513; --surface:#18201C; --surface-2:#212B26; --ink:#E5E9E2; --muted:#98A59E; --line:#2D3833;
+    --accent:#72C2A3; --accent-soft:#1E3A30; --accent-ink:#0C1511;
+    --gold:#D9B35C; --gold-soft:#3A3120;
+    --good:#7FCB8C; --good-soft:#1E3524; --bad:#E58076; --bad-soft:#3E2220;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --bg:#111513; --surface:#18201C; --surface-2:#212B26; --ink:#E5E9E2; --muted:#98A59E; --line:#2D3833;
+  --accent:#72C2A3; --accent-soft:#1E3A30; --accent-ink:#0C1511;
+  --gold:#D9B35C; --gold-soft:#3A3120;
+  --good:#7FCB8C; --good-soft:#1E3524; --bad:#E58076; --bad-soft:#3E2220;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:var(--display);font-weight:400;line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:clamp(2.2rem,6vw,3.6rem)}
+h2{font-size:clamp(1.7rem,4vw,2.3rem)}
+h3{font-size:1.4rem}
+h4{font-size:1.15rem}
+p{margin:0}
+a{color:var(--accent)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.eyebrow{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.muted{color:var(--muted)}
+.en{font-style:italic}
+
+/* Layout */
+.shell{display:grid;grid-template-columns:250px minmax(0,1fr);min-height:100vh}
+.side{position:sticky;top:env(safe-area-inset-top,0px);height:100vh;overflow:auto;border-right:1px solid var(--line);padding:24px 16px;display:flex;flex-direction:column;gap:20px;background:var(--surface)}
+.brand{display:flex;flex-direction:column;gap:2px;padding-inline:8px}
+.brand b{font-family:var(--display);font-weight:400;font-size:1.6rem;line-height:1}
+.brand span{font-size:.85rem;color:var(--muted)}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav a{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;text-decoration:none;color:var(--ink);font-weight:500}
+.nav a:hover{background:var(--surface-2)}
+.nav a[aria-current="page"]{background:var(--accent);color:var(--accent-ink)}
+.nav a .dot{width:7px;height:7px;border-radius:50%;background:transparent;flex:none}
+.nav a.seen .dot{background:var(--gold)}
+.nav a[aria-current="page"] .dot{background:var(--accent-ink)}
+.side-foot{margin-top:auto;font-size:.85rem;color:var(--muted);padding-inline:8px;display:flex;flex-direction:column;gap:6px}
+.meter{height:6px;background:var(--surface-2);border-radius:99px;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--gold);width:0;transition:width .4s}
+.shell > div{min-width:0}
+main{padding-inline:clamp(16px,4vw,56px);padding-block:32px 80px;min-width:0}
+.page{max-width:980px;margin-inline:auto;display:flex;flex-direction:column;gap:32px}
+.page-head{display:flex;flex-direction:column;gap:10px;max-width:68ch}
+.lead{font-size:1.12rem;color:var(--muted)}
+.topbar{display:none}
+
+@media (max-width:860px){
+  .shell{grid-template-columns:1fr}
+  .side{display:none}
+  .topbar{display:flex;flex-direction:column;gap:8px;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line);padding:10px 16px}
+  .topbar .brand{padding:0;flex-direction:row;align-items:baseline;gap:10px}
+  .topbar .brand b{font-size:1.3rem}
+  .chips-nav{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+  .chips-nav::-webkit-scrollbar{display:none}
+  .chips-nav a{flex:none;padding:6px 12px;border-radius:99px;border:1px solid var(--line);text-decoration:none;color:var(--ink);font-size:.92rem;font-weight:500}
+  .chips-nav a[aria-current="page"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+  main{padding-block:24px 64px}
+}
+
+/* Blocks */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr))}
+.stack{display:flex;flex-direction:column;gap:12px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.section{display:flex;flex-direction:column;gap:16px}
+.section > h2{padding-bottom:6px;border-bottom:1px solid var(--line)}
+ul.clean{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px}
+ul.bul{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:4px}
+.kv{display:grid;grid-template-columns:max-content 1fr;gap:4px 14px;font-size:.95rem}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0}
+.term{font-weight:700}
+.tag{display:inline-block;padding:2px 9px;border-radius:99px;font-size:.8rem;font-weight:500;background:var(--surface-2);color:var(--ink)}
+.tag.gold{background:var(--gold-soft);color:var(--gold)}
+.tag.green{background:var(--accent-soft);color:var(--accent)}
+.quote{font-family:var(--display);font-size:1.2rem;line-height:1.35}
+.quote-src{font-size:.85rem;color:var(--muted)}
+blockquote{margin:0;padding-left:14px;border-left:2px solid var(--gold)}
+.tip{background:var(--gold-soft);border-radius:var(--r);padding:14px 16px;font-size:.97rem}
+.tip b{color:var(--gold)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:8px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-weight:500;text-decoration:none;color:var(--ink)}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.small{padding:5px 11px;font-size:.9rem}
+.chip{padding:6px 13px;border-radius:99px;border:1px solid var(--line);background:transparent;cursor:pointer;font-size:.93rem}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+input[type="search"],select{font:inherit;padding:9px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);min-width:0}
+.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:.95rem}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;background:var(--surface-2)}
+tr:last-child td{border-bottom:0}
+
+/* Start */
+.hero{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:28px;align-items:end;padding-bottom:24px;border-bottom:1px solid var(--line)}
+.hero h1 em{font-style:italic;color:var(--accent)}
+.hero-quote{font-family:var(--display);font-size:1.25rem;line-height:1.4;color:var(--muted)}
+.hero-quote i{display:block;font-size:.9rem;font-family:var(--body);font-style:normal;margin-top:6px}
+@media (max-width:700px){.hero{grid-template-columns:1fr}}
+.path{counter-reset:step;display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr))}
+.path a{counter-increment:step;display:flex;flex-direction:column;gap:4px;padding:14px 16px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);text-decoration:none;color:var(--ink)}
+.path a::before{content:"Schritt " counter(step);font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);font-weight:700}
+.path a:hover{border-color:var(--accent)}
+.path a b{font-family:var(--display);font-weight:400;font-size:1.25rem}
+.path a span{font-size:.92rem;color:var(--muted)}
+.path a.seen b::after{content:" ✓";color:var(--good);font-family:var(--body);font-size:1rem}
+.stats{display:flex;flex-wrap:wrap;gap:28px}
+.stat b{display:block;font-family:var(--display);font-weight:400;font-size:2rem;font-variant-numeric:tabular-nums;line-height:1}
+.stat span{font-size:.85rem;color:var(--muted)}
+
+/* Freytag */
+.freytag svg{width:100%;height:auto;display:block}
+.freytag .node{cursor:pointer}
+.freytag .node circle{fill:var(--surface);stroke:var(--accent);stroke-width:2}
+.freytag .node.on circle{fill:var(--accent)}
+.freytag .node text{fill:var(--ink);font-family:var(--body);font-size:13px;font-weight:700}
+.freytag .node .roman{fill:var(--accent);font-family:var(--display);font-size:15px;font-weight:400}
+.freytag .node.on .roman{fill:var(--accent-ink)}
+.freytag path.curve{fill:none;stroke:var(--ink);stroke-width:2}
+.freytag .area{fill:var(--accent-soft)}
+.freytag .axis{stroke:var(--line);stroke-width:1}
+
+/* Scansion */
+.scan-line{display:flex;flex-wrap:wrap;gap:4px;font-family:var(--mono);font-size:1rem}
+.syl{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:34px;padding:6px 6px 4px;border:1px solid var(--line);border-radius:6px;background:var(--surface);cursor:pointer}
+.syl .mk{font-size:1rem;line-height:1;height:1rem;color:var(--muted)}
+.syl[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.syl[aria-pressed="true"] .mk{color:var(--accent);font-weight:600}
+.syl.right{border-color:var(--good);background:var(--good-soft)}
+.syl.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.feedback{padding:12px 14px;border-radius:8px;font-size:.96rem}
+.feedback.ok{background:var(--good-soft);color:var(--good)}
+.feedback.no{background:var(--bad-soft);color:var(--bad)}
+.feedback.info{background:var(--surface-2)}
+.mono{font-family:var(--mono);font-size:.92rem}
+
+/* Sonnet */
+.sonnet{display:grid;grid-template-columns:auto 1fr auto;gap:2px 14px;font-family:var(--display);font-size:1.1rem;line-height:1.5}
+.sonnet .ln{font-family:var(--mono);font-size:.75rem;color:var(--muted);align-self:center;font-variant-numeric:tabular-nums}
+.sonnet .rh{font-family:var(--mono);font-size:.85rem;font-weight:600;align-self:center;padding:0 7px;border-radius:4px}
+.sonnet .gap{grid-column:1/-1;height:8px}
+.sonnet .couplet{padding-left:1.5em}
+.volta{color:var(--bad);font-weight:700}
+.rA{background:#D5E6DD;color:#1F5E4B}.rB{background:#F1E6C8;color:#7A560E}.rC{background:#DCE3F2;color:#2D4677}.rD{background:#EEDCE6;color:#7A2E57}
+.rE{background:#E4E0F2;color:#4A3C82}.rF{background:#DDEDEF;color:#1F6068}.rG{background:#F3DADA;color:#9B2C2C}
+:root[data-theme="dark"] .sonnet .rh{filter:saturate(.9) brightness(.9)}
+
+/* Glossary */
+.gloss{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+.gcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:8px}
+.gcard h4{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
+.gcard .ex{font-family:var(--display);font-size:1.02rem;line-height:1.35}
+.gcard .fn{font-size:.92rem}
+.gcard .fn b{color:var(--accent)}
+
+/* Plays */
+.play-head{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:flex-end}
+.acts{display:flex;flex-direction:column}
+.act{display:grid;grid-template-columns:64px 1fr;gap:14px;padding:12px 0;border-bottom:1px solid var(--line)}
+.act:last-child{border-bottom:0}
+.act .no{font-family:var(--display);font-size:1.5rem;color:var(--accent);line-height:1}
+.act .no small{display:block;font-family:var(--body);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+.act.turn .no{color:var(--gold)}
+
+/* Schemas */
+.steps{counter-reset:s;display:flex;flex-direction:column;gap:0;margin:0;padding:0;list-style:none}
+.steps > li{counter-increment:s;display:grid;grid-template-columns:40px 1fr;gap:12px;padding:14px 0;border-bottom:1px solid var(--line)}
+.steps > li:last-child{border-bottom:0}
+.steps > li::before{content:counter(s);width:32px;height:32px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-weight:700;font-variant-numeric:tabular-nums}
+.steps h4{margin-bottom:4px}
+.phrases{font-size:.93rem;color:var(--muted);font-style:italic}
+.peel{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:10px}
+.peel div{border-top:3px solid var(--accent);background:var(--surface);padding:12px 14px;border-radius:0 0 8px 8px}
+.peel b{font-family:var(--display);font-weight:400;font-size:1.3rem;color:var(--accent)}
+.sample{font-size:1rem;line-height:1.65}
+.sample mark{background:transparent;border-bottom:2px solid;padding-bottom:1px}
+.sample .mP{border-color:var(--accent)} .sample .mE{border-color:var(--gold)} .sample .mX{border-color:#5C7BC0} .sample .mL{border-color:var(--bad)}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:.85rem}
+.legend span::before{content:"";display:inline-block;width:14px;height:3px;margin-right:6px;vertical-align:middle;background:currentColor}
+.subtabs{display:flex;flex-wrap:wrap;gap:6px}
+
+/* Flashcards */
+.fc-wrap{display:flex;flex-direction:column;gap:14px;align-items:stretch;max-width:640px}
+.fc{perspective:1200px;height:300px;cursor:pointer}
+.fc-inner{position:relative;width:100%;height:100%;transition:transform .5s;transform-style:preserve-3d}
+.fc.flip .fc-inner{transform:rotateY(180deg)}
+.fc-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:24px;display:flex;flex-direction:column;justify-content:center;gap:10px;overflow:auto}
+.fc-face.back{transform:rotateY(180deg);background:var(--surface-2)}
+.fc-face .big{font-family:var(--display);font-size:2.1rem;line-height:1.1}
+.fc-hint{position:absolute;bottom:12px;right:16px;font-size:.8rem;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){.fc-inner{transition:none}.meter i{transition:none}}
+
+/* Quiz */
+.q-opts{display:flex;flex-direction:column;gap:8px}
+.q-opt{text-align:left;padding:12px 14px;border:1px solid var(--line);border-radius:8px;background:var(--surface);cursor:pointer}
+.q-opt:hover:not(:disabled){border-color:var(--accent)}
+.q-opt.right{border-color:var(--good);background:var(--good-soft);color:var(--good)}
+.q-opt.wrong{border-color:var(--bad);background:var(--bad-soft);color:var(--bad)}
+.q-opt:disabled{cursor:default}
+.q-prog{display:flex;gap:4px}
+.q-prog i{flex:1;height:5px;border-radius:99px;background:var(--surface-2)}
+.q-prog i.ok{background:var(--good)} .q-prog i.no{background:var(--bad)} .q-prog i.cur{background:var(--accent)}
+
+/* Checklist */
+.check{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--line)}
+.check:last-child{border-bottom:0}
+.check input{margin-top:5px;accent-color:var(--accent);width:18px;height:18px;flex:none}
+.timeline{display:flex;height:34px;border-radius:8px;overflow:hidden;font-size:.8rem;font-weight:700}
+.timeline div{display:flex;align-items:center;justify-content:center;color:var(--accent-ink);white-space:nowrap;overflow:hidden;padding:0 4px}
+.foot{font-size:.85rem;color:var(--muted);border-top:1px solid var(--line);padding-top:16px}
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="side" aria-label="Navigation">
+    <div class="brand"><b>The Globe</b><span>Shakespeare · Englisch Q2</span></div>
+    <nav class="nav" id="nav"></nav>
+    <div class="side-foot">
+      <span id="prog-label">Fortschritt</span>
+      <div class="meter"><i id="prog-bar"></i></div>
+    </div>
+  </aside>
+  <div>
+    <header class="topbar">
+      <div class="brand"><b>The Globe</b><span>Shakespeare · Q2</span></div>
+      <nav class="chips-nav" id="chips"></nav>
+    </header>
+    <main id="main"></main>
+  </div>
+</div>
+
+<script>
+/* ============ Storage (optional, fails silently) ============ */
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem("globe:"+k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem("globe:"+k, JSON.stringify(v)); }catch(e){} }
+};
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const shuffle = a => { a = a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+
+/* ============ DATA ============ */
+const SECTIONS = [
+  {id:"start", name:"Start"},
+  {id:"kontext", name:"Kontext & Globe"},
+  {id:"drama", name:"Dramenstruktur"},
+  {id:"sprache", name:"Vers & Sprache"},
+  {id:"stilmittel", name:"Stilmittel"},
+  {id:"werke", name:"Die Stücke"},
+  {id:"schemas", name:"Analyse-Schemas"},
+  {id:"film", name:"Filmanalyse"},
+  {id:"karten", name:"Karteikarten"},
+  {id:"quiz", name:"Quiz"},
+  {id:"klausur", name:"Klausur-Check"}
+];
+
+const DEVICES = [
+  {t:"Metaphor", de:"Metapher", cat:"Bildsprache", def:"Direkter Vergleich ohne „like/as“: etwas wird mit etwas anderem gleichgesetzt.", ex:"“It is the east, and Juliet is the sun.”", src:"Romeo and Juliet 2.2", fn:"Idealisiert Juliet als Lichtquelle und Lebensmittelpunkt; zeigt Romeos schwärmerische Liebe."},
+  {t:"Simile", de:"Vergleich", cat:"Bildsprache", def:"Vergleich mit „like“ oder „as“.", ex:"“My bounty is as boundless as the sea, / My love as deep.”", src:"Romeo and Juliet 2.2", fn:"Veranschaulicht die grenzenlose Tiefe von Juliets Liebe."},
+  {t:"Personification", de:"Personifikation", cat:"Bildsprache", def:"Dinge oder Abstraktes bekommen menschliche Eigenschaften.", ex:"“Arise, fair sun, and kill the envious moon.”", src:"Romeo and Juliet 2.2", fn:"Der Mond wird neidisch, die Sonne (Juliet) aktiv – Juliet überstrahlt alles."},
+  {t:"Imagery", de:"Bildlichkeit / Bildfelder", cat:"Bildsprache", def:"Wiederkehrende bildhafte Sprache aus einem Bereich (z. B. Licht/Dunkel, Blut, Krankheit).", ex:"“Will all great Neptune's ocean wash this blood / Clean from my hand?”", src:"Macbeth 2.2", fn:"Blut-Bildfeld zieht sich durch das Stück und steht für Schuld, die nicht abwaschbar ist."},
+  {t:"Symbol", de:"Symbol", cat:"Bildsprache", def:"Konkreter Gegenstand steht für eine abstrakte Idee.", ex:"Desdemonas Taschentuch (handkerchief)", src:"Othello 3.3", fn:"Steht für Treue und Liebe – und wird von Iago zum „Beweis“ der Untreue umgedeutet."},
+  {t:"Oxymoron", de:"Oxymoron", cat:"Gegensatz", def:"Zwei sich widersprechende Begriffe direkt verbunden.", ex:"“O brawling love! O loving hate!” / “Parting is such sweet sorrow.”", src:"Romeo and Juliet 1.1 / 2.2", fn:"Drückt Romeos innere Zerrissenheit und die widersprüchliche Natur der Liebe aus."},
+  {t:"Antithesis", de:"Antithese", cat:"Gegensatz", def:"Gegensätzliche Gedanken werden in parallel gebauten Satzteilen gegenübergestellt.", ex:"“Not that I loved Caesar less, but that I loved Rome more.”", src:"Julius Caesar 3.2", fn:"Brutus rechtfertigt den Mord scheinbar logisch und ausgewogen."},
+  {t:"Paradox", de:"Paradoxon", cat:"Gegensatz", def:"Scheinbar widersprüchliche Aussage, die auf tieferer Ebene Sinn ergibt.", ex:"“I must be cruel only to be kind.”", src:"Hamlet 3.4", fn:"Hamlet rechtfertigt seine Härte gegenüber Gertrude als eigentlich fürsorglich."},
+  {t:"Chiasmus", de:"Chiasmus", cat:"Gegensatz", def:"Überkreuzstellung von Satzgliedern (ABBA).", ex:"“Fair is foul, and foul is fair.”", src:"Macbeth 1.1", fn:"Die Hexen stellen die moralische Ordnung auf den Kopf; Leitmotiv „appearance vs. reality“."},
+  {t:"Alliteration", de:"Alliteration", cat:"Klang", def:"Gleicher Anlaut aufeinanderfolgender Wörter.", ex:"“From forth the fatal loins of these two foes.”", src:"Romeo and Juliet, Prologue", fn:"Harte f-Laute betonen Verhängnis und Feindschaft; einprägsam."},
+  {t:"Assonance", de:"Assonanz", cat:"Klang", def:"Wiederholung gleicher Vokale.", ex:"“Double, double toil and trouble”", src:"Macbeth 4.1", fn:"Der Klang wirkt beschwörend, fast wie ein Zauberspruch."},
+  {t:"Anaphora", de:"Anapher", cat:"Wiederholung", def:"Wiederholung desselben Wortes am Anfang aufeinanderfolgender Verse/Sätze.", ex:"“This royal throne of kings, this sceptred isle, / This earth of majesty …”", src:"Richard II 2.1", fn:"Steigert die patriotische Wirkung, wirkt feierlich und eindringlich."},
+  {t:"Repetition", de:"Wiederholung", cat:"Wiederholung", def:"Wörter oder Wendungen werden wiederholt.", ex:"“Tomorrow, and tomorrow, and tomorrow / Creeps in this petty pace from day to day.”", src:"Macbeth 5.5", fn:"Macht die Eintönigkeit und Sinnlosigkeit von Macbeths Leben hörbar."},
+  {t:"Parallelism", de:"Parallelismus", cat:"Wiederholung", def:"Gleicher Satzbau in aufeinanderfolgenden Sätzen.", ex:"“If you prick us, do we not bleed? If you tickle us, do we not laugh?”", src:"The Merchant of Venice 3.1", fn:"Shylock betont die gemeinsame Menschlichkeit von Juden und Christen – eindringlich und logisch."},
+  {t:"Enumeration", de:"Aufzählung / Akkumulation", cat:"Wiederholung", def:"Reihung mehrerer Begriffe oder Beispiele.", ex:"Die „seven ages of man“: infant, schoolboy, lover, soldier, justice …", src:"As You Like It 2.7", fn:"Stellt den Lebenslauf als Folge von Rollen dar – Leben als Theater."},
+  {t:"Climax (rhetorical)", de:"Klimax / Steigerung", cat:"Wiederholung", def:"Steigerung von schwächeren zu stärkeren Ausdrücken.", ex:"“If you poison us, do we not die? And if you wrong us, shall we not revenge?”", src:"The Merchant of Venice 3.1", fn:"Shylocks Rede steigert sich bis zur Rache – der Höhepunkt rechtfertigt sein Handeln."},
+  {t:"Rhetorical question", de:"Rhetorische Frage", cat:"Rhetorik", def:"Frage, auf die keine Antwort erwartet wird.", ex:"“Hath not a Jew eyes?”", src:"The Merchant of Venice 3.1", fn:"Die Antwort ist offensichtlich; das Publikum wird zum Mitdenken gezwungen."},
+  {t:"Apostrophe", de:"Apostrophe (Anrede)", cat:"Rhetorik", def:"Direkte Anrede einer abwesenden Person, eines Gegenstands oder einer Idee.", ex:"“O Romeo, Romeo, wherefore art thou Romeo?”", src:"Romeo and Juliet 2.2", fn:"Juliet spricht den (scheinbar) Abwesenden an – zeigt ihre intimen Gefühle. (wherefore = warum)"},
+  {t:"Hyperbole", de:"Hyperbel / Übertreibung", cat:"Rhetorik", def:"Starke Übertreibung.", ex:"“Will all great Neptune's ocean wash this blood / Clean from my hand?”", src:"Macbeth 2.2", fn:"Das Ausmaß von Macbeths Schuld wird überdimensional groß."},
+  {t:"Verbal irony", de:"Verbale Ironie", cat:"Rhetorik", def:"Man sagt das Gegenteil von dem, was man meint.", ex:"“For Brutus is an honourable man.”", src:"Julius Caesar 3.2", fn:"Antony wiederholt den Satz so oft, bis er ins Gegenteil kippt – die Menge wendet sich gegen Brutus."},
+  {t:"Pun", de:"Wortspiel", cat:"Rhetorik", def:"Spiel mit Doppelbedeutungen oder ähnlich klingenden Wörtern.", ex:"“Ask for me tomorrow, and you shall find me a grave man.”", src:"Romeo and Juliet 3.1", fn:"Der sterbende Mercutio: „grave“ = ernst / Grab. Witz selbst im Tod – tragikomisch."},
+  {t:"Allusion", de:"Anspielung", cat:"Rhetorik", def:"Verweis auf Mythologie, Bibel, Geschichte oder Literatur.", ex:"“great Neptune's ocean”", src:"Macbeth 2.2", fn:"Der römische Meeresgott steht für die größte denkbare Wassermenge."},
+  {t:"Euphemism", de:"Euphemismus", cat:"Rhetorik", def:"Beschönigende Umschreibung.", ex:"“If it were done when 'tis done, then 'twere well / It were done quickly.”", src:"Macbeth 1.7", fn:"Macbeth vermeidet das Wort „Mord“ – er verdrängt, was er vorhat."},
+  {t:"Foreshadowing", de:"Vorausdeutung", cat:"Dramatisch", def:"Hinweis auf spätere Ereignisse.", ex:"“My grave is like to be my wedding bed.”", src:"Romeo and Juliet 1.5", fn:"Juliets Worte kündigen ihren Tod in der Gruft an; verstärkt das Schicksalsmotiv."},
+  {t:"Dramatic irony", de:"Dramatische Ironie", cat:"Dramatisch", def:"Das Publikum weiß mehr als die Figuren.", ex:"Romeo hält Juliet für tot – das Publikum weiß, dass sie nur schläft.", src:"Romeo and Juliet 5.3", fn:"Erzeugt Spannung, Mitleid und Verzweiflung beim Publikum (Katharsis)."},
+  {t:"Motif", de:"Motiv / Leitmotiv", cat:"Dramatisch", def:"Wiederkehrendes Element (Bild, Idee, Situation), das Bedeutung trägt.", ex:"Schlaf in Macbeth: “Macbeth does murder sleep.”", src:"Macbeth 2.2", fn:"Schlaflosigkeit = Verlust von Unschuld und innerem Frieden; kehrt im Schlafwandeln (5.1) wieder."}
+];
+
+const DRAMA_TERMS = [
+  {t:"Soliloquy", de:"Monolog (allein auf der Bühne)", def:"Eine Figur spricht allein auf der Bühne ihre Gedanken aus. Sie ist dabei ehrlich – das Publikum erfährt ihre wahren Motive.", ex:"Hamlet: “To be, or not to be” (3.1)"},
+  {t:"Monologue", de:"Monolog (vor anderen)", def:"Lange Rede einer Figur, während andere anwesend sind und zuhören.", ex:"Antony: “Friends, Romans, countrymen” (JC 3.2)"},
+  {t:"Aside", de:"Beiseitesprechen", def:"Kurze Bemerkung ans Publikum, die die anderen Figuren auf der Bühne (angeblich) nicht hören.", ex:"Macbeth: “Stars, hide your fires” (1.4)"},
+  {t:"Dialogue", de:"Dialog", def:"Wechselrede zwischen Figuren – treibt Handlung und Konflikt voran."},
+  {t:"Stichomythia", de:"Stichomythie", def:"Schneller Schlagabtausch Zeile um Zeile, oft bei Streit oder Werben.", ex:"Richard und Anne in Richard III (1.2)"},
+  {t:"Shared line", de:"Geteilte Verszeile", def:"Eine Verszeile wird auf zwei Sprecher aufgeteilt – zeigt Nähe, Eile oder Spannung.", ex:"Macbeth und Lady Macbeth nach dem Mord (2.2)"},
+  {t:"Prologue / Chorus", de:"Prolog / Chor", def:"Einleitende Rede, die das Thema oder sogar das Ende vorwegnimmt.", ex:"Romeo and Juliet: “Two households, both alike in dignity”"},
+  {t:"Epilogue", de:"Epilog", def:"Schlussrede ans Publikum.", ex:"Puck: “If we shadows have offended” (MND 5.1)"},
+  {t:"Play-within-a-play", de:"Spiel im Spiel", def:"Theateraufführung innerhalb des Stücks (Metatheater).", ex:"„The Mousetrap“ in Hamlet (3.2); „Pyramus and Thisbe“ in MND (5.1)"},
+  {t:"Comic relief", de:"Komische Entlastung", def:"Komische Szene/Figur, die in einer Tragödie die Spannung kurz löst.", ex:"Der Porter in Macbeth (2.3); die Totengräber in Hamlet (5.1)"},
+  {t:"Stage directions", de:"Regieanweisungen", def:"Bei Shakespeare sehr sparsam (Enter, Exit, Exeunt, Aside). Vieles steckt im Text selbst („word scenery“)."},
+  {t:"Tragic hero", de:"Tragischer Held", def:"Hochgestellte Figur mit Größe, die durch einen eigenen Fehler (hamartia) untergeht.", ex:"Macbeth, Hamlet, Othello, Brutus"},
+  {t:"Hamartia", de:"Tragischer Fehler", def:"Charakterschwäche oder Fehlentscheidung, die den Untergang auslöst.", ex:"Macbeths Ehrgeiz, Othellos Eifersucht, Hamlets Zögern"},
+  {t:"Hubris", de:"Hybris", def:"Selbstüberschätzung, Überheblichkeit gegenüber der Ordnung.", ex:"Macbeth fühlt sich durch die Prophezeiungen unbesiegbar (5.3)."},
+  {t:"Peripeteia", de:"Peripetie / Wendepunkt", def:"Plötzlicher Umschwung des Schicksals, meist im 3. Akt.", ex:"Romeo tötet Tybalt und wird verbannt (3.1)."},
+  {t:"Anagnorisis", de:"Erkenntnis", def:"Moment, in dem der Held die Wahrheit erkennt – meist zu spät.", ex:"Othello erfährt von Emilia, dass Desdemona unschuldig war (5.2)."},
+  {t:"Catharsis", de:"Katharsis / Reinigung", def:"Das Publikum durchlebt Mitleid (pity) und Furcht (fear) und wird dadurch „gereinigt“ (Aristoteles)."},
+  {t:"Dramatic irony", de:"Dramatische Ironie", def:"Das Publikum weiß mehr als die Figuren.", ex:"Duncan vertraut Macbeth, das Publikum kennt dessen Mordgedanken."}
+];
+
+const FILM_TERMS = [
+  {t:"Extreme long shot", de:"Panorama / Weit", cat:"Einstellungsgröße", def:"Landschaft oder Stadt, Figuren winzig oder nicht erkennbar.", fn:"Orientierung (establishing shot), Einsamkeit, Größe des Raums."},
+  {t:"Long shot", de:"Totale", cat:"Einstellungsgröße", def:"Ganze Figur mit viel Umgebung.", fn:"Zeigt Figur im Verhältnis zur Umgebung, Handlungsüberblick."},
+  {t:"Full shot", de:"Halbtotale", cat:"Einstellungsgröße", def:"Figur von Kopf bis Fuß.", fn:"Körpersprache, Gruppen, Bewegungen."},
+  {t:"Medium shot", de:"Halbnah / Amerikanisch", cat:"Einstellungsgröße", def:"Figur ab Hüfte bzw. Knie aufwärts.", fn:"Typisch für Dialoge, Gestik und Mimik sichtbar."},
+  {t:"Close-up", de:"Großaufnahme", cat:"Einstellungsgröße", def:"Gesicht füllt das Bild.", fn:"Gefühle, Nähe, Identifikation mit der Figur."},
+  {t:"Extreme close-up", de:"Detail", cat:"Einstellungsgröße", def:"Nur ein Detail (Augen, Hand, Gegenstand).", fn:"Hebt ein Detail als bedeutsam hervor, z. B. Gift, Ring, Dolch."},
+  {t:"Eye-level shot", de:"Normalsicht", cat:"Perspektive", def:"Kamera auf Augenhöhe.", fn:"Neutral, natürlich; Zuschauer auf Augenhöhe mit der Figur."},
+  {t:"High-angle shot", de:"Vogelperspektive / Aufsicht", cat:"Perspektive", def:"Kamera blickt von oben herab.", fn:"Figur wirkt klein, schwach, verletzlich, ausgeliefert."},
+  {t:"Low-angle shot", de:"Froschperspektive / Untersicht", cat:"Perspektive", def:"Kamera blickt von unten hinauf.", fn:"Figur wirkt mächtig, bedrohlich, überlegen."},
+  {t:"Bird's-eye view", de:"Senkrechte Aufsicht", cat:"Perspektive", def:"Direkt von oben.", fn:"Distanz, Überblick, Figuren wirken wie Spielfiguren (Schicksal!)."},
+  {t:"Dutch angle / canted angle", de:"Gekippte Kamera", cat:"Perspektive", def:"Horizont schräg.", fn:"Unruhe, Chaos, gestörte Ordnung, Wahnsinn."},
+  {t:"Pan", de:"Schwenk (horizontal)", cat:"Kamerabewegung", def:"Kamera dreht sich waagerecht auf der Stelle.", fn:"Raum erkunden, Verbindung zwischen Figuren herstellen."},
+  {t:"Tilt", de:"Neigen (vertikal)", cat:"Kamerabewegung", def:"Kamera neigt sich auf/ab.", fn:"Größe betonen, z. B. an einer Figur hochfahren."},
+  {t:"Tracking shot", de:"Kamerafahrt", cat:"Kamerabewegung", def:"Kamera bewegt sich mit (auf Schienen, Steadicam).", fn:"Begleiten der Figur, Dynamik, Mittendrin-Gefühl."},
+  {t:"Zoom", de:"Zoom", cat:"Kamerabewegung", def:"Brennweite ändert sich, Kamera bleibt stehen.", fn:"Aufmerksamkeit lenken, Schock oder Erkenntnis betonen."},
+  {t:"Hand-held camera", de:"Handkamera", cat:"Kamerabewegung", def:"Wackelige, ungestützte Kamera.", fn:"Authentizität, Hektik, Gewalt, Dokumentarstil."},
+  {t:"Cut", de:"Schnitt (harter Schnitt)", cat:"Montage", def:"Direkter Übergang zwischen zwei Einstellungen.", fn:"Tempo; schnelle Schnittfolge = Spannung, Chaos."},
+  {t:"Shot / reverse shot", de:"Schuss-Gegenschuss", cat:"Montage", def:"Abwechselnd die Gesprächspartner.", fn:"Dialog, Beziehung und Konflikt zwischen zwei Figuren."},
+  {t:"Cross-cutting", de:"Parallelmontage", cat:"Montage", def:"Zwei gleichzeitige Handlungsstränge im Wechsel.", fn:"Spannung, Vergleich oder Kontrast."},
+  {t:"Fade / dissolve", de:"Abblende / Überblendung", cat:"Montage", def:"Bild wird schwarz bzw. geht weich ins nächste über.", fn:"Zeitsprung, Ende eines Abschnitts, Traum, Erinnerung."},
+  {t:"Slow motion", de:"Zeitlupe", cat:"Montage", def:"Verlangsamte Bewegung.", fn:"Betont einen dramatischen Moment, Emotion, Ästhetisierung von Gewalt."},
+  {t:"Diegetic sound", de:"Diegetischer Ton", cat:"Ton", def:"Ton aus der Filmwelt (Stimmen, Radio, Geräusche).", fn:"Realismus; die Figuren hören ihn auch."},
+  {t:"Non-diegetic sound", de:"Nicht-diegetischer Ton", cat:"Ton", def:"Filmmusik (score), Voice-over – nur für das Publikum.", fn:"Lenkt Emotionen, kommentiert die Handlung."},
+  {t:"Voice-over", de:"Off-Stimme", cat:"Ton", def:"Stimme aus dem Off.", fn:"Gedanken hörbar machen – filmisches Mittel für einen Soliloquy!"},
+  {t:"Mise-en-scène", de:"Inszenierung im Bild", cat:"Mise-en-scène", def:"Alles vor der Kamera: Setting, Kostüm, Requisiten, Licht, Schauspiel, Farbe.", fn:"Schafft Atmosphäre, charakterisiert Figuren, transportiert Symbole."},
+  {t:"Low-key lighting", de:"Low-Key-Beleuchtung", cat:"Mise-en-scène", def:"Viel Schatten, starke Kontraste.", fn:"Bedrohung, Geheimnis, Böses (z. B. Macbeth-Verfilmungen)."},
+  {t:"High-key lighting", de:"High-Key-Beleuchtung", cat:"Mise-en-scène", def:"Hell, gleichmäßig, wenig Schatten.", fn:"Freundliche, heitere, romantische Stimmung."}
+];
+
+const PLAYS = [
+ {id:"rj", title:"Romeo and Juliet", year:"c. 1595", genre:"Tragedy", setting:"Verona (und Mantua), Italien",
+  gist:"Zwei junge Menschen aus verfeindeten Familien verlieben sich, heiraten heimlich und sterben durch eine Kette von Zufällen, Eile und Hass. Erst ihr Tod versöhnt die Familien.",
+  chars:[["Romeo","Sohn der Montagues, leidenschaftlich, impulsiv"],["Juliet","13-jährige Tochter der Capulets, entwickelt sich vom gehorsamen Mädchen zur entschlossenen Frau"],["Mercutio","Romeos witziger Freund, Verwandter des Prinzen"],["Tybalt","Juliets aggressiver Cousin (“Prince of Cats”)"],["Friar Laurence","Mönch, traut das Paar, entwirft den Plan mit dem Schlaftrunk"],["Nurse","Juliets Amme, Vertraute, komisch-derb"],["Lord Capulet","Juliets Vater, patriarchalisch"],["Paris","Adliger, soll Juliet heiraten"],["Prince Escalus","Herrscher von Verona, steht für Ordnung"]],
+  acts:[
+   "Straßenkampf der Montagues und Capulets; der Prinz droht mit dem Tod. Romeo leidet an Liebe zu Rosaline. Paris wirbt um Juliet. Auf dem Fest der Capulets treffen sich Romeo und Juliet (geteiltes Sonett) und erfahren erst danach, wer der andere ist.",
+   "Balkonszene: gegenseitiges Liebesgeständnis. Friar Laurence willigt in die Trauung ein, weil er auf ein Ende der Fehde hofft. Die Amme überbringt Nachrichten; heimliche Hochzeit.",
+   "Wendepunkt: Tybalt tötet Mercutio („A plague o' both your houses!“), Romeo tötet Tybalt und wird nach Mantua verbannt. Hochzeitsnacht. Capulet zwingt Juliet zur Heirat mit Paris am Donnerstag.",
+   "Friar Laurence gibt Juliet einen Trank, der sie 42 Stunden scheintot macht. Juliet trinkt ihn nach einem angstvollen Monolog. Sie wird „tot“ aufgefunden, die Hochzeit wird zur Beerdigung.",
+   "Balthasar meldet Romeo Juliets Tod; der Brief des Friars erreicht Romeo nicht (Pest-Quarantäne). Romeo kauft Gift, tötet Paris an der Gruft und stirbt. Juliet erwacht und ersticht sich. Die Familien versöhnen sich."
+  ], turn:3,
+  themes:["Love vs. hate","Fate (star-crossed lovers)","Haste & time","Youth vs. age","Light & darkness","Violence & honour","Individual vs. society"],
+  quotes:[
+   ["“A pair of star-crossed lovers take their life”","Chorus, Prologue","Das Ende wird vorweggenommen: Das Publikum schaut nicht wegen des „Was“, sondern wegen des „Wie“. Schicksalsmotiv."],
+   ["“But soft, what light through yonder window breaks? / It is the east, and Juliet is the sun.”","Romeo, 2.2","Metapher und Licht-Bildfeld; perfekter iambischer Pentameter; Juliet wird idealisiert."],
+   ["“What's in a name? That which we call a rose / By any other word would smell as sweet.”","Juliet, 2.2","Juliet stellt die Bedeutung des Familiennamens infrage – Individuum gegen gesellschaftliche Zwänge."],
+   ["“These violent delights have violent ends”","Friar Laurence, 2.6","Warnung vor Eile; Vorausdeutung auf das tragische Ende."],
+   ["“A plague o' both your houses!”","Mercutio, 3.1","Mercutio verflucht beide Familien – Wendepunkt von Komödie zu Tragödie."],
+   ["“O, I am fortune's fool!”","Romeo, 3.1","Romeo sieht sich als Spielball des Schicksals – aber handelt er nicht selbst impulsiv?"],
+   ["“Thus with a kiss I die.”","Romeo, 5.3","Liebe und Tod verschmelzen; dramatische Ironie, da Juliet lebt."]
+  ],
+  films:["Baz Luhrmann: Romeo + Juliet (1996) – Verona Beach, Waffen statt Schwerter, Originalsprache","Franco Zeffirelli: Romeo and Juliet (1968)","Carlo Carlei: Romeo & Juliet (2013)","West Side Story (1961; Steven Spielberg 2021) – Musical-Adaption, Gangs in New York"],
+  tip:"Beliebte Klausurszenen: Prologue, Fest (1.5, geteiltes Sonett), Balkonszene (2.2), Kampfszene (3.1), Juliets Monolog vor dem Trank (4.3), Gruft (5.3). Frage oft: Schicksal oder eigene Schuld?"
+ },
+ {id:"mac", title:"Macbeth", year:"c. 1606", genre:"Tragedy", setting:"Schottland (11. Jh.), Inverness, Dunsinane",
+  gist:"Ein tapferer General wird durch die Prophezeiung dreier Hexen und den Ehrgeiz seiner Frau zum Königsmörder und Tyrannen. Schuld und Paranoia zerstören ihn und Lady Macbeth.",
+  chars:[["Macbeth","Thane of Glamis, später Cawdor und König; tapfer, ehrgeizig, zunehmend skrupellos"],["Lady Macbeth","treibt ihn zum Mord, zerbricht später an Schuld"],["Banquo","General; erhält die Prophezeiung, seine Nachkommen würden Könige"],["Duncan","gütiger König von Schottland"],["Macduff","Thane of Fife, Gegenspieler, tötet Macbeth"],["Malcolm","Duncans Sohn, wird am Ende König"],["The Weird Sisters","drei Hexen; Übernatürliches, Zweideutigkeit"],["Fleance","Banquos Sohn, entkommt"]],
+  acts:[
+   "Die Hexen prophezeien Macbeth: Thane of Cawdor und König; Banquo: Vater von Königen. Macbeth wird sofort Cawdor. Lady Macbeth liest seinen Brief und fordert „unsex me here“. Duncan kommt nach Inverness; Macbeth zögert, sie überredet ihn.",
+   "Dolch-Monolog („Is this a dagger …“). Macbeth ermordet Duncan; Lady Macbeth beschmiert die Diener mit Blut. Klopfen, Porter-Szene (comic relief). Malcolm und Donalbain fliehen; Macbeth wird König.",
+   "Macbeth lässt Banquo ermorden, Fleance entkommt. Beim Bankett erscheint Banquos Geist – Wendepunkt: Macbeths Fassade bricht öffentlich zusammen.",
+   "Die Hexen zeigen Erscheinungen: Hüte dich vor Macduff; niemand, der von einer Frau geboren ist, kann Macbeth schaden; er fällt erst, wenn Birnam Wood nach Dunsinane kommt. Macbeth lässt Macduffs Familie ermorden. Malcolm und Macduff sammeln in England ein Heer.",
+   "Lady Macbeth schlafwandelt („Out, damned spot!“) und stirbt. „Tomorrow“-Monolog. Das Heer tarnt sich mit Ästen – der Wald „kommt“. Macduff war „untimely ripped“ (Kaiserschnitt) und tötet Macbeth. Malcolm wird König, die Ordnung ist wiederhergestellt."
+  ], turn:3,
+  themes:["Ambition","Guilt & conscience","Appearance vs. reality","Fate vs. free will","The supernatural","Masculinity & gender","Kingship vs. tyranny","Order & chaos (Great Chain of Being)"],
+  quotes:[
+   ["“Fair is foul, and foul is fair”","Witches, 1.1","Chiasmus/Paradoxon: moralische Ordnung auf dem Kopf; Leitmotiv Schein vs. Sein. Trochäischer Rhythmus der Hexen."],
+   ["“Stars, hide your fires; / Let not light see my black and deep desires.”","Macbeth (aside), 1.4","Aside verrät das Verborgene; Licht/Dunkel-Bildfeld; Reimpaar."],
+   ["“Look like th' innocent flower, / But be the serpent under't.”","Lady Macbeth, 1.5","Schein vs. Sein; biblische Anspielung (Schlange im Paradies)."],
+   ["“I have no spur / To prick the sides of my intent, but only / Vaulting ambition”","Macbeth, 1.7","Selbsterkenntnis: Einziges Motiv ist Ehrgeiz – seine hamartia. Reiter-Metapher."],
+   ["“Is this a dagger which I see before me, / The handle toward my hand?”","Macbeth, 2.1","Halluzination zeigt seinen inneren Konflikt; feminine ending; übernatürlich oder Einbildung?"],
+   ["“Out, damned spot! Out, I say!”","Lady Macbeth, 5.1","In Prosa – Zeichen ihres geistigen Zerfalls. Blut-Motiv kehrt zurück."],
+   ["“Life's but a walking shadow, a poor player / That struts and frets his hour upon the stage”","Macbeth, 5.5","Theatermetapher: Leben als bedeutungslose Rolle – Nihilismus."]
+  ],
+  films:["Justin Kurzel: Macbeth (2015) – Michael Fassbender, düstere Schlachtbilder","Joel Coen: The Tragedy of Macbeth (2021) – Schwarz-Weiß, expressionistisch, Denzel Washington","Roman Polanski: Macbeth (1971)","Akira Kurosawa: Throne of Blood (1957) – Samurai-Adaption"],
+  tip:"Achte auf die Rollenumkehr: Anfangs ist Lady Macbeth die Stärkere, am Ende zerbricht sie und Macbeth wird kalt. Charakterisierungen und die Frage „Wer ist schuld – Hexen, Lady Macbeth oder Macbeth?“ sind Klassiker."
+ },
+ {id:"ham", title:"Hamlet", year:"c. 1600", genre:"Tragedy (Revenge tragedy)", setting:"Schloss Elsinore, Dänemark",
+  gist:"Der Geist seines Vaters verlangt von Prinz Hamlet Rache an Claudius, der den König ermordet und die Königin geheiratet hat. Hamlet zögert, spielt den Wahnsinnigen – und am Ende sind fast alle tot.",
+  chars:[["Hamlet","Prinz von Dänemark, grüblerisch, zögernd, sprachgewaltig"],["Claudius","Hamlets Onkel, Brudermörder und neuer König"],["Gertrude","Hamlets Mutter, heiratet Claudius schnell"],["The Ghost","Geist von Hamlets Vater"],["Polonius","Berater des Königs, geschwätzig, spioniert"],["Ophelia","Tochter des Polonius, Hamlets Geliebte, wird wahnsinnig"],["Laertes","Sohn des Polonius, sucht Rache – Spiegelfigur zu Hamlet"],["Horatio","Hamlets treuer Freund"],["Rosencrantz & Guildenstern","Schulfreunde, spionieren für Claudius"],["Fortinbras","Prinz von Norwegen, handelt entschlossen – Kontrastfigur"]],
+  acts:[
+   "Wachen sehen den Geist. Claudius hat Gertrude geheiratet; Hamlet trauert („Frailty, thy name is woman!“). Der Geist enthüllt: Claudius hat ihn mit Gift ins Ohr ermordet. Hamlet schwört Rache und will sich wahnsinnig stellen („antic disposition“).",
+   "Polonius glaubt, Hamlet sei aus Liebe zu Ophelia verrückt. Rosencrantz und Guildenstern sollen ihn aushorchen. Schauspieler kommen; Hamlet plant ein Stück, das den Mord nachstellt.",
+   "„To be, or not to be“. Nonnen-Szene mit Ophelia. Das Spiel im Spiel („The Mousetrap“): Claudius verrät sich – Wendepunkt. Hamlet verschont den betenden Claudius. In der Szene mit Gertrude ersticht er Polonius hinter dem Vorhang.",
+   "Hamlet wird mit einem Todesbrief nach England geschickt, entkommt. Ophelia wird wahnsinnig und ertrinkt. Laertes kehrt zurück und plant mit Claudius ein Duell mit vergifteter Klinge und vergiftetem Wein.",
+   "Friedhof: „Alas, poor Yorick!“ – Nachdenken über den Tod. Beim Duell trinkt Gertrude das Gift, Laertes und Hamlet werden verwundet, Laertes gesteht, Hamlet tötet Claudius und stirbt („The rest is silence“). Fortinbras übernimmt Dänemark."
+  ], turn:3,
+  themes:["Revenge","Action vs. inaction","Madness (real/feigned)","Mortality & death","Corruption & decay","Appearance vs. reality","Women & gender"],
+  quotes:[
+   ["“Frailty, thy name is woman!”","Hamlet, 1.2","Apostrophe; Hamlets Misogynie und Enttäuschung über Gertrude."],
+   ["“Something is rotten in the state of Denmark.”","Marcellus, 1.4","Krankheits-/Fäulnis-Bildfeld: Der Staat ist moralisch verdorben."],
+   ["“Though this be madness, yet there is method in't.”","Polonius (aside), 2.2","Zweifel, ob Hamlets Wahnsinn echt ist – dramatische Ironie."],
+   ["“The play's the thing / Wherein I'll catch the conscience of the king.”","Hamlet, 2.2","Reimpaar am Szenenende; Theater als Mittel der Wahrheit (Metatheater)."],
+   ["“To be, or not to be, that is the question”","Hamlet, 3.1","Soliloquy über Leben und Tod, Handeln und Nichthandeln; Antithese; feminine ending."],
+   ["“I must be cruel only to be kind.”","Hamlet, 3.4","Paradoxon; rechtfertigt sein Verhalten gegenüber Gertrude."],
+   ["“The rest is silence.”","Hamlet, 5.2","Schlichte letzte Worte des wortgewaltigen Prinzen – starker Kontrast."]
+  ],
+  films:["Kenneth Branagh: Hamlet (1996) – ungekürzt, prunkvoll","Michael Almereyda: Hamlet (2000) – New Yorker Konzern „Denmark Corporation“, Video-Ästhetik","Franco Zeffirelli: Hamlet (1990) – Mel Gibson","Gregory Doran: Hamlet (2009) – David Tennant, Überwachungskameras"],
+  tip:"Hamlet ist das Stück der Monologe. Lerne die Struktur eines Soliloquy-Aufbaus: Anlass – Gedankengang – Wendung – Entschluss. Vergleiche Hamlet mit Laertes und Fortinbras (foil characters)."
+ },
+ {id:"oth", title:"Othello", year:"c. 1603", genre:"Tragedy", setting:"Venedig und Zypern",
+  gist:"Der schwarze General Othello wird von seinem Fähnrich Iago so manipuliert, dass er seine treue Frau Desdemona für untreu hält und sie tötet.",
+  chars:[["Othello","„The Moor“, angesehener General, würdevoll, aber verletzlich als Außenseiter"],["Iago","Fähnrich, Intrigant, Meister der Manipulation, viele Soliloquies"],["Desdemona","Othellos Frau, treu, mutig (heiratet gegen den Willen des Vaters)"],["Cassio","Othellos Leutnant, ehrgeizig, beliebt"],["Emilia","Iagos Frau, Desdemonas Dienerin, deckt am Ende die Wahrheit auf"],["Roderigo","verliebt in Desdemona, von Iago ausgenutzt"],["Brabantio","Desdemonas Vater, Senator"],["Bianca","Cassios Geliebte"]],
+  acts:[
+   "Iago hasst Othello, weil Cassio befördert wurde. Er hetzt Brabantio auf, Desdemona sei mit Othello durchgebrannt. Vor dem Senat verteidigt sich Othello überzeugend. Er wird nach Zypern geschickt, Desdemona folgt.",
+   "Ein Sturm vernichtet die türkische Flotte. Iago macht Cassio betrunken, Cassio wird nach einer Schlägerei entlassen („Reputation …“). Iago rät ihm, über Desdemona um Vergebung zu bitten.",
+   "Wendepunkt (Temptation scene, 3.3): Iago sät Eifersucht („green-eyed monster“). Emilia findet Desdemonas Taschentuch und gibt es Iago. Othello verlangt „ocular proof“ und schwört Rache.",
+   "Othello belauscht ein Gespräch über Bianca und bezieht es auf Desdemona. Er schlägt Desdemona öffentlich. Desdemona singt das Weidenlied (willow song) und ahnt den Tod.",
+   "Roderigo scheitert beim Mord an Cassio, Iago tötet Roderigo. Othello erstickt Desdemona. Emilia deckt Iagos Intrige auf und wird von ihm getötet. Othello erkennt seinen Irrtum und ersticht sich. Iago schweigt."
+  ], turn:3,
+  themes:["Jealousy","Race & otherness","Manipulation & deception","Appearance vs. reality","Reputation & honour","Love & trust","Gender & patriarchy"],
+  quotes:[
+   ["“I am not what I am.”","Iago, 1.1","Iago kündigt seine Täuschung offen an – Schein vs. Sein."],
+   ["“an old black ram / Is tupping your white ewe”","Iago, 1.1","Rassistische, sexualisierte Tiermetapher; zeigt, wie Iago mit Vorurteilen arbeitet. Wichtig für das Thema Rassismus."],
+   ["“She loved me for the dangers I had passed, / And I loved her that she did pity them.”","Othello, 1.3","Othellos würdevolle Blankvers-Sprache widerlegt die Vorurteile gegen ihn."],
+   ["“Reputation, reputation, reputation! O, I have lost my reputation!”","Cassio, 2.3","Wiederholung; Bedeutung von Ruf und Ehre in der Gesellschaft."],
+   ["“O, beware, my lord, of jealousy; / It is the green-eyed monster which doth mock / The meat it feeds on.”","Iago, 3.3","Personifikation/Metapher; Iago warnt – und erzeugt genau damit Eifersucht (Ironie)."],
+   ["“one that loved not wisely but too well”","Othello, 5.2","Othellos Selbstdeutung vor dem Tod – Anagnorisis oder Selbstrechtfertigung?"],
+   ["“Demand me nothing. What you know, you know. / From this time forth I never will speak word.”","Iago, 5.2","Der Manipulator verweigert jede Erklärung – seine Motive bleiben rätselhaft."]
+  ],
+  films:["Oliver Parker: Othello (1995) – Laurence Fishburne, Kenneth Branagh als Iago","Tim Blake Nelson: O (2001) – Highschool-Basketball-Adaption","Vishal Bhardwaj: Omkara (2006) – indische Adaption"],
+  tip:"Iagos Soliloquies zeigen seine Strategie – analysiere, wie er Sprache zur Manipulation nutzt (Andeutungen, Fragen, Wiederholungen). Othellos Sprache verfällt unter Iagos Einfluss (Prosa, abgehackte Sätze)."
+ },
+ {id:"mnd", title:"A Midsummer Night's Dream", year:"c. 1595", genre:"Comedy", setting:"Athen und der Zauberwald",
+  gist:"Vier junge Liebende, ein Elfenpaar im Streit und eine Gruppe Handwerker geraten in einer Sommernacht im Wald durcheinander – bis sich am Ende alle richtigen Paare finden.",
+  chars:[["Theseus & Hippolyta","Herzog von Athen und Amazonenkönigin; ihre Hochzeit rahmt das Stück"],["Hermia & Lysander","lieben sich gegen den Willen ihres Vaters Egeus"],["Helena & Demetrius","Helena liebt Demetrius, der Hermia will"],["Oberon & Titania","Elfenkönig und -königin, im Streit"],["Puck (Robin Goodfellow)","Oberons schelmischer Diener, verursacht Chaos"],["Bottom","Weber und Laienschauspieler, bekommt einen Eselskopf"],["The Mechanicals","Handwerker, proben „Pyramus and Thisbe“"],["Egeus","Hermias Vater, patriarchalisch"]],
+  acts:[
+   "Egeus verlangt, dass Hermia Demetrius heiratet – sonst Tod oder Kloster. Hermia und Lysander planen die Flucht in den Wald; Helena verrät es Demetrius. Die Handwerker verteilen die Rollen.",
+   "Oberon und Titania streiten. Oberon lässt Puck die Zauberblume holen. Puck beträufelt versehentlich Lysander, der sich in Helena verliebt.",
+   "Bottom bekommt einen Eselskopf, Titania verliebt sich in ihn. Chaos: Beide Männer lieben nun Helena, die sich verspottet fühlt; Streit der vier Liebenden.",
+   "Oberon löst den Zauber bei Titania. Die Liebenden erwachen als richtige Paare; Theseus setzt sich über Egeus hinweg. Bottom erwacht („I have had a most rare vision“).",
+   "Dreifache Hochzeit. Die Handwerker spielen „Pyramus and Thisbe“ (komisch schlecht – Parodie auf Romeo and Juliet). Die Elfen segnen die Paare; Puck spricht den Epilog."
+  ], turn:3,
+  themes:["Irrationality of love","Dream vs. reality","Order (Athens) vs. chaos (forest)","Theatre & metatheatre","Patriarchy & gender","Transformation"],
+  quotes:[
+   ["“The course of true love never did run smooth.”","Lysander, 1.1","Leitgedanke des Stücks; Liebe ist voller Hindernisse."],
+   ["“Love looks not with the eyes, but with the mind, / And therefore is winged Cupid painted blind.”","Helena, 1.1","Liebe ist irrational; Anspielung auf Cupido; Reimpaar."],
+   ["“Lord, what fools these mortals be!”","Puck, 3.2","Distanzierter, komischer Blick auf die Liebenden."],
+   ["“I have had a most rare vision.”","Bottom, 4.1","Prosa; komische Verwirrung zwischen Traum und Wirklichkeit."],
+   ["“The lunatic, the lover, and the poet / Are of imagination all compact.”","Theseus, 5.1","Macht der Fantasie – auch das Theater selbst."],
+   ["“If we shadows have offended, / Think but this, and all is mended”","Puck, Epilogue","Metatheater: Das Stück selbst war nur ein Traum."]
+  ],
+  films:["Michael Hoffman: A Midsummer Night's Dream (1999) – Toskana um 1900, Fahrräder","Get Over It (2001) – Highschool-Komödie mit Schulaufführung"],
+  tip:"Komödien-Merkmale sicher benennen: Verwechslung, Verwandlung, Zauber, komische Figuren, Spiel im Spiel, glückliches Ende mit Hochzeiten. Sprachebenen: Adel (Blankvers), Liebende (Reime), Elfen (Tetrameter), Handwerker (Prosa)."
+ },
+ {id:"mer", title:"The Merchant of Venice", year:"c. 1597", genre:"Comedy / problem play", setting:"Venedig und Belmont",
+  gist:"Der Kaufmann Antonio leiht sich Geld beim jüdischen Geldverleiher Shylock – als Pfand gilt ein Pfund seines Fleisches. Als Antonio nicht zahlen kann, rettet ihn Portia als verkleideter Anwalt.",
+  chars:[["Antonio","der Kaufmann, melancholisch, verachtet Shylock"],["Bassanio","Antonios Freund, wirbt um Portia"],["Shylock","jüdischer Geldverleiher, gedemütigt und rachsüchtig"],["Portia","reiche Erbin aus Belmont, klug, verkleidet sich als Anwalt"],["Jessica","Shylocks Tochter, flieht mit Lorenzo"],["Gratiano","Bassanios Freund, spottet über Shylock"],["Nerissa","Portias Zofe"]],
+  acts:[
+   "Bassanio braucht Geld, um Portia zu umwerben. Antonio leiht es bei Shylock: Pfand ist ein Pfund Fleisch. In Belmont muss Portias Freier das richtige von drei Kästchen wählen.",
+   "Der Prinz von Marokko wählt Gold („All that glisters is not gold“), Arragon Silber – beide falsch. Jessica flieht mit Lorenzo und Shylocks Geld.",
+   "Antonios Schiffe gehen verloren. Shylock: „Hath not a Jew eyes?“ Bassanio wählt Blei und gewinnt Portia. Nachricht: Antonio muss das Pfand zahlen.",
+   "Gerichtsszene: Portia als Anwalt „Balthazar“ fordert Gnade („The quality of mercy“). Shylock beharrt – Portia: Fleisch ja, aber kein Tropfen Blut. Shylock verliert Vermögen und muss konvertieren.",
+   "In Belmont klärt sich der Ring-Streit auf; Antonios Schiffe sind doch sicher. Glückliches Ende für alle – außer Shylock."
+  ], turn:4,
+  themes:["Antisemitism & prejudice","Mercy vs. justice","Money & value","Outsiders","Appearance vs. reality (caskets)","Friendship & love"],
+  quotes:[
+   ["“All that glisters is not gold”","Schriftrolle im Goldkästchen, 2.7","Schein vs. Sein; äußerer Wert ist nicht innerer Wert."],
+   ["“Hath not a Jew eyes?”","Shylock, 3.1","Rhetorische Frage; Plädoyer für gemeinsame Menschlichkeit – in Prosa."],
+   ["“If you prick us, do we not bleed? … And if you wrong us, shall we not revenge?”","Shylock, 3.1","Parallelismus und Klimax: von Menschlichkeit zur Rechtfertigung der Rache."],
+   ["“The quality of mercy is not strained; / It droppeth as the gentle rain from heaven”","Portia, 4.1","Vergleich; christliches Ideal der Gnade – aber zeigen die Christen selbst Gnade?"],
+   ["“This bond doth give thee here no jot of blood”","Portia, 4.1","Juristischer Wendepunkt: Shylock wird mit dem Buchstaben des Gesetzes geschlagen."]
+  ],
+  films:["Michael Radford: The Merchant of Venice (2004) – Al Pacino als Shylock, betont die Diskriminierung"],
+  tip:"Heute wird das Stück kritisch gelesen: Ist Shylock Täter oder Opfer? Zeige beide Seiten und beziehe den historischen Kontext (Antisemitismus im elisabethanischen England) ein."
+ },
+ {id:"jc", title:"Julius Caesar", year:"1599", genre:"Tragedy (Roman play)", setting:"Rom und Philippi, 44–42 v. Chr.",
+  gist:"Aus Angst, Caesar werde Tyrann, ermorden Brutus, Cassius und andere Verschwörer ihn. Doch Mark Antony wendet mit einer brillanten Rede das Volk gegen sie; Bürgerkrieg und Untergang der Verschwörer folgen.",
+  chars:[["Julius Caesar","mächtiger Feldherr, stolz"],["Brutus","idealistischer Verschwörer, handelt „für Rom“"],["Cassius","neidisch, treibende Kraft der Verschwörung"],["Mark Antony","Caesars Freund, geschickter Redner"],["Calpurnia","Caesars Frau, hat Warnträume"],["Portia","Brutus' Frau"],["Octavius","Caesars Erbe"],["Soothsayer","Wahrsager: „Beware the ides of March“"]],
+  acts:[
+   "Caesar kehrt siegreich heim; ein Wahrsager warnt ihn vor den Iden des März. Cassius versucht Brutus für die Verschwörung zu gewinnen.",
+   "Brutus entscheidet sich im Monolog für den Mord. Calpurnia träumt von Caesars Tod und warnt ihn; Decius überredet Caesar, trotzdem zum Senat zu gehen.",
+   "Ermordung Caesars („Et tu, Brute?“). Brutus erklärt sich dem Volk in nüchterner Prosa; Antony hält seine Rede („Friends, Romans, countrymen“) und wendet die Menge – Wendepunkt.",
+   "Brutus und Cassius streiten und versöhnen sich. Caesars Geist erscheint Brutus.",
+   "Schlacht bei Philippi. Cassius und Brutus begehen Selbstmord. Antony würdigt Brutus: „This was the noblest Roman of them all.“"
+  ], turn:3,
+  themes:["Power & ambition","Rhetoric & manipulation","Honour","Fate vs. free will","Public vs. private self","Loyalty & betrayal"],
+  quotes:[
+   ["“Beware the ides of March.”","Soothsayer, 1.2","Vorausdeutung; Schicksal."],
+   ["“The fault, dear Brutus, is not in our stars, / But in ourselves, that we are underlings.”","Cassius, 1.2","Antithese; freier Wille statt Schicksal – Manipulation von Brutus."],
+   ["“Cowards die many times before their deaths; / The valiant never taste of death but once.”","Caesar, 2.2","Antithese; Caesars Stolz (hubris)."],
+   ["“Et tu, Brute? Then fall, Caesar!”","Caesar, 3.1","Verrat durch den Freund; Caesar spricht von sich in der 3. Person."],
+   ["“Not that I loved Caesar less, but that I loved Rome more.”","Brutus, 3.2","Antithese und Parallelismus in Prosa – rational, aber kühl."],
+   ["“Friends, Romans, countrymen, lend me your ears”","Antony, 3.2","Trikolon; emotionale Rede im Blankvers mit Ironie („honourable man“) – Musterbeispiel für Rhetorik-Analyse."],
+   ["“This was the noblest Roman of them all.”","Antony, 5.5","Brutus als tragischer Held."]
+  ],
+  films:["Joseph L. Mankiewicz: Julius Caesar (1953) – Marlon Brando als Antony","Paolo & Vittorio Taviani: Caesar Must Die (2012) – Gefängnisaufführung"],
+  tip:"Vergleiche die Reden von Brutus und Antony (3.2): Prosa vs. Blankvers, Logos vs. Pathos, Wirkung auf das Volk. Perfekt für eine Rhetorik-Analyse."
+ }
+];
+
+const SCHEMAS = {
+ szene: {name:"Szenenanalyse", intro:"Standardaufgabe: Analysiere einen Dramenauszug. Ziel ist nicht Nacherzählen, sondern zu zeigen, WIE und WARUM der Text wirkt.",
+  steps:[
+   ["Introduction","Autor, Titel, Jahr, Gattung, Akt/Szene, kurze Situation, Thema und eine Leitthese (thesis statement).","“The extract taken from Act 3, Scene 1 of William Shakespeare's tragedy Romeo and Juliet (c. 1595) presents the turning point of the play, when …”"],
+   ["Context / Einordnung","Was ist vorher passiert? Welche Funktion hat die Szene im Handlungsverlauf (Exposition, Wendepunkt, Retardation …)?","“Prior to this scene, Romeo has secretly married Juliet, which is why …”"],
+   ["Structure","Gliederung in Sinnabschnitte (mit Zeilenangaben), Auf- und Abtritte, Spannungsverlauf, Redeanteile.","“The scene can be divided into three parts. The first part (ll. 1–34) …”"],
+   ["Characters & conflict","Figurenkonstellation, Beziehungen, Konflikt, Machtverhältnisse, Gefühle – immer mit Belegen.","“Tybalt's aggressive tone reveals …” / “The power balance shifts when …”"],
+   ["Language & style","Vers/Prosa/Reim, Anrede (thou/you), Satzbau, Stilmittel. Jeweils: Mittel → Zitat → Wirkung/Funktion.","“The oxymoron ‘loving hate’ (l. 176) emphasises Romeo's inner conflict.”"],
+   ["Dramatic devices","Soliloquy, aside, dramatic irony, stage directions, foreshadowing, comic relief – und ihre Wirkung auf das Publikum.","“The aside creates dramatic irony, as the audience …”"],
+   ["Conclusion","Ergebnisse bündeln, Leitthese bestätigen, Bedeutung der Szene für das ganze Stück. Keine neuen Argumente.","“To sum up, the scene marks … Shakespeare uses … to show …”"]
+  ]},
+ monolog: {name:"Soliloquy", intro:"Ein Soliloquy zeigt die Gedanken einer Figur ungefiltert. Frage dich: Was denkt die Figur, wie entwickelt sich der Gedanke, und was verrät das über ihren Charakter?",
+  steps:[
+   ["Situation","Wer spricht, wann, warum allein? Was ist unmittelbar davor passiert?","“Left alone on stage after …, Macbeth reflects on …”"],
+   ["Train of thought","Gedankengang in Schritten: Ausgangsproblem → Abwägen → Wendung → Entschluss (oder keiner).","“At first he …, then he begins to doubt …, finally he decides …”"],
+   ["State of mind","Gefühle, innerer Konflikt, Motive, Veränderung der Figur.","“His inner conflict between ambition and conscience becomes apparent …”"],
+   ["Language","Metrum und Brüche (Abweichungen = Unruhe), rhetorische Fragen, Bildfelder, Satzabbrüche, Anrede an Abwesende (apostrophe).","“The irregular rhythm mirrors his agitation.”"],
+   ["Function","Warum spricht er allein? Nähe zum Publikum, dramatische Ironie, Vorausdeutung, Charakterisierung.","“The soliloquy allows the audience an insight into … which the other characters lack.”"]
+  ]},
+ charakter: {name:"Charakterisierung", intro:"Operator „characterise“: Stelle eine Figur mit ihren Eigenschaften dar und belege alles am Text. Unterscheide direkte und indirekte Charakterisierung.",
+  steps:[
+   ["Introduction","Name, Stück, Rolle im Stück, erster Gesamteindruck.","“Lady Macbeth, one of the main characters in …, is presented as …”"],
+   ["Social position & appearance","Stand, Beruf, Familie, Alter, Status in der Gesellschaft.","“As the wife of a Scottish nobleman, she …”"],
+   ["Traits (explicit)","Selbstaussagen und Aussagen anderer Figuren (direct characterisation).","“Macbeth calls her his ‘dearest partner of greatness’ (1.5).”"],
+   ["Traits (implicit)","Was zeigen ihr Handeln, ihre Sprache, ihr Verhalten (indirect characterisation)?","“Her use of imperatives reveals her dominance.”"],
+   ["Relationships","Wie verhält sie sich zu anderen? Machtgefälle, Veränderungen.","“In her relationship with Macbeth she …”"],
+   ["Development","Ist sie statisch oder dynamisch? Wendepunkte?","“Whereas she appears … in Act 1, she is … by Act 5.”"],
+   ["Conclusion","Zusammenfassen: Welche Funktion hat die Figur für das Stück?","“All in all, Lady Macbeth serves as …”"]
+  ]},
+ sonett: {name:"Sonett / Gedicht", intro:"Bei Sonetten achtest du besonders auf die Verbindung von Form und Inhalt – vor allem auf die Volta (Wendung).",
+  steps:[
+   ["Introduction","Autor, Titel/Nummer, Gattung, Thema, Sprecher (lyrical I / speaker), Adressat.","“Shakespeare's Sonnet 18 deals with the power of poetry to preserve beauty …”"],
+   ["Form","14 Zeilen, 3 Quartette + Couplet, Reimschema ABAB CDCD EFEF GG, iambischer Pentameter.","“The poem follows the conventional form of an English sonnet …”"],
+   ["Content per unit","Was sagt jedes Quartett? Wie verändert sich der Gedanke?","“In the first quatrain the speaker compares …”"],
+   ["Volta","Wo kippt der Gedanke (oft „But“ in Zeile 9 oder im Couplet)? Welche neue Perspektive?","“The volta in line 9 (‘But thy eternal summer …’) marks a shift …”"],
+   ["Language & imagery","Bildfelder, Vergleiche, Personifikationen, Klang, Enjambements.","“The personification of the sun as ‘the eye of heaven’ …”"],
+   ["Couplet & conclusion","Botschaft des Couplets; Gesamtdeutung; Verhältnis von Form und Inhalt.","“The final couplet sums up …”"]
+  ]},
+ film: {name:"Filmszene", intro:"In Q2 werden Shakespeare-Szenen oft mit Verfilmungen verglichen. Analysiere Filmsprache und Wirkung – und wie die Verfilmung den Text deutet.",
+  steps:[
+   ["Introduction","Regie, Titel, Jahr, Szene, Bezug zum Original.","“In his film Romeo + Juliet (1996), Baz Luhrmann adapts the balcony scene by …”"],
+   ["Content & setting","Was passiert, wo, wann? Veränderungen gegenüber dem Text (Kürzungen, Ort, Zeit).","“Instead of a balcony, the lovers meet in a swimming pool …”"],
+   ["Camera","Einstellungsgrößen, Perspektiven, Kamerabewegung – immer mit Wirkung.","“A close-up of Juliet's face conveys …”"],
+   ["Editing & sound","Schnitt-Tempo, Montage, Musik, diegetischer / nicht-diegetischer Ton.","“The fast cuts create a sense of chaos …”"],
+   ["Mise-en-scène","Setting, Licht, Farben, Kostüme, Requisiten, Schauspiel.","“The characters' costumes symbolise …”"],
+   ["Interpretation & comparison","Wie deutet der Film das Stück? Wirkung auf ein junges Publikum heute?","“By modernising the setting, Luhrmann makes the play accessible to …”"]
+  ]},
+ kommentar: {name:"Kommentar / Stellungnahme", intro:"AFB III (comment, discuss, assess, evaluate): Du nimmst begründet Stellung. Klassische Frage in Q2: „Is Shakespeare still relevant for young people today?“",
+  steps:[
+   ["Introduction","Thema aufgreifen, Bedeutung zeigen, eventuell Position andeuten (bei comment) oder offen lassen (bei discuss).","“More than 400 years after his death, Shakespeare's plays are still performed … But are they still relevant?”"],
+   ["Arguments (pro / contra)","Bei discuss: beide Seiten. Argumente vom schwächsten zum stärksten ordnen. Jedes Argument: These – Begründung – Beispiel.","“One argument in favour of … is … For example, …”"],
+   ["Use your knowledge","Belege aus dem Unterricht: Stücke, Szenen, Verfilmungen, universelle Themen (love, power, jealousy, identity).","“Romeo and Juliet's conflict with their parents mirrors …”"],
+   ["Conclusion","Eigene, klare Meinung, die aus den Argumenten folgt. Kein neues Argument.","“Weighing up the arguments, I am convinced that …”"]
+  ]},
+ kreativ: {name:"Kreative Aufgaben", intro:"Re-creation of text (AFB III): interior monologue, diary entry, letter, speech, dialogue, additional scene, modern version. Muss inhaltlich zum Stück passen!",
+  steps:[
+   ["Aufgabe genau lesen","Welche Textsorte? Wer schreibt, an wen, wann im Stück?","Beispiel: “Write Juliet's diary entry the night before she drinks the potion.”"],
+   ["Inhaltlich passend","Keine Fakten erfinden, die dem Stück widersprechen. Gefühle, Motive und Wissensstand der Figur beachten.","Juliet weiß noch nicht, dass Romeo den Brief nicht bekommt."],
+   ["Textsortenmerkmale","Diary: Datum, 1. Person, Gefühle. Letter: Anrede, Grußformel. Interior monologue: 1. Person, Präsens, Gedankensprünge, unvollständige Sätze.","“Dear Diary, …” / “Tomorrow … no, tonight I must …”"],
+   ["Sprache","Modernes Englisch, aber passendes Register. Einzelne Anspielungen auf Originalzitate sind stark.","“What's in a name, Romeo said – no, I said it …”"],
+   ["Bezug zum Original","Zeige, dass du das Stück verstanden hast: Themen, Motive, Beziehungen einbauen.","Licht/Dunkel-Motiv, Schicksal, Angst vor der Gruft"]
+  ]}
+};
+
+const OPERATORS = [
+ {afb:"I", op:"describe / outline / state / summarise", de:"Beschreiben, Hauptpunkte darstellen, zusammenfassen", tip:"Präsens, eigene Worte, keine Zitate, keine Wertung, keine Details. Summary: nur das Wesentliche."},
+ {afb:"I", op:"point out", de:"Bestimmte Aspekte herausarbeiten", tip:"Nur die gefragten Punkte, knapp und präzise."},
+ {afb:"II", op:"analyse / examine", de:"Untersuchen, wie ein Text funktioniert", tip:"Inhalt + Form + Wirkung. Immer: Mittel – Beleg – Funktion."},
+ {afb:"II", op:"characterise", de:"Figur mit Eigenschaften darstellen", tip:"Direkte und indirekte Charakterisierung, mit Belegen."},
+ {afb:"II", op:"explain", de:"Erklären, Zusammenhänge darstellen", tip:"Gründe und Ursachen, gestützt durch Kontextwissen."},
+ {afb:"II", op:"compare / contrast", de:"Vergleichen / Gegenüberstellen", tip:"Nach Kriterien vorgehen, Gemeinsamkeiten und Unterschiede. Contrast = Unterschiede im Fokus."},
+ {afb:"II/III", op:"interpret", de:"Deuten", tip:"Tiefere Bedeutung herausarbeiten, am Text begründet."},
+ {afb:"III", op:"assess / evaluate", de:"Beurteilen, bewerten", tip:"Abwägen, eigenes begründetes Urteil nach Kriterien."},
+ {afb:"III", op:"comment", de:"Stellung nehmen", tip:"Eigene Meinung klar und begründet, mit Beispielen."},
+ {afb:"III", op:"discuss", de:"Erörtern", tip:"Pro und Contra abwägen, dann eigenes Fazit."},
+ {afb:"III", op:"justify", de:"Rechtfertigen, begründen", tip:"Eine Position mit Argumenten stützen."},
+ {afb:"III", op:"write (a letter, diary entry …)", de:"Kreativ schreiben", tip:"Textsortenmerkmale + inhaltlich stimmig zum Stück."}
+];
+
+const PHRASES = [
+ ["Einleitung",["The extract taken from … deals with …","The scene is set in … / takes place …","In this scene, Shakespeare presents …","It can be assumed that …"]],
+ ["Zitieren & Belegen",["… as can be seen in line 12 (l. 12).","Romeo describes Juliet as “the sun” (2.2.3).","This is illustrated by the quotation “…” (ll. 4–6).","Verse zitieren: Zeilenumbruch mit „/“ markieren."]],
+ ["Wirkung beschreiben",["This emphasises / underlines / stresses …","The use of … conveys a sense of …","This creates an atmosphere of …","This makes the audience feel …","The metaphor highlights …"]],
+ ["Verknüpfen",["Furthermore, / Moreover, / In addition, …","In contrast to this, / Whereas …, …","As a consequence, / Therefore, …","This is reinforced by …"]],
+ ["Schluss",["To sum up, / All in all, / In conclusion, …","The analysis has shown that …","Thus, the scene serves as …"]],
+ ["Meinung (AFB III)",["In my opinion, / From my point of view, …","I am convinced that …","Weighing up the arguments, …","It cannot be denied that …, but …"]]
+];
+
+const SCANSION = [
+ {line:"But soft, what light through yonder window breaks?", syl:["But","soft","what","light","through","yon","der","win","dow","breaks"], pat:"0101010101", meter:"iambic pentameter", src:"Romeo, Romeo and Juliet 2.2", note:"Ein perfekter iambischer Pentameter: fünf Iamben (da-DUM), zehn Silben. Die betonten Silben tragen die Bedeutung: soft – light – yon – win – breaks."},
+ {line:"Shall I compare thee to a summer's day?", syl:["Shall","I","com","pare","thee","to","a","sum","mer's","day"], pat:"0101010101", meter:"iambic pentameter", src:"Sonnet 18, l. 1", note:"Regelmäßiger iambischer Pentameter. Manche lesen „SHALL I“ als Trochäus am Anfang – das ist eine erlaubte Variante."},
+ {line:"Is this a dagger which I see before me,", syl:["Is","this","a","dag","ger","which","I","see","be","fore","me"], pat:"01010101010", meter:"iambic pentameter + feminine ending", src:"Macbeth 2.1", note:"Elf Silben: Die letzte unbetonte Silbe („me“) ist eine feminine ending. Sie lässt den Vers unruhig, fragend auslaufen – passend zu Macbeths Zweifel."},
+ {line:"To be, or not to be, that is the question:", syl:["To","be","or","not","to","be","that","is","the","ques","tion"], pat:"01010101010", meter:"iambic pentameter + feminine ending", src:"Hamlet 3.1", note:"Feminine ending auf „-tion“: Der Vers bleibt offen wie Hamlets Frage. Die Zäsur nach „to be,“ trennt die zwei Möglichkeiten."},
+ {line:"Now is the winter of our discontent", syl:["Now","is","the","win","ter","of","our","dis","con","tent"], pat:"1001010101", meter:"iambic pentameter with trochaic inversion", src:"Richard III 1.1", note:"Der Vers beginnt mit einem Trochäus (NOW is) statt einem Iambus. Diese Umkehrung (inversion) betont das erste Wort – „Jetzt“ bekommt besonderes Gewicht."},
+ {line:"Double, double toil and trouble;", syl:["Dou","ble","dou","ble","toil","and","trou","ble"], pat:"10101010", meter:"trochaic tetrameter", src:"Witches, Macbeth 4.1", note:"Kein Blankvers! Die Hexen sprechen im Trochäus (DUM-da) mit vier Hebungen. Dieser andere Rhythmus markiert sie als übernatürlich und wirkt wie ein Zauberspruch."}
+];
+
+const SONNET18 = [
+ ["Shall I compare thee to a summer's day?","A"],["Thou art more lovely and more temperate:","B"],["Rough winds do shake the darling buds of May,","A"],["And summer's lease hath all too short a date;","B"],
+ ["Sometime too hot the eye of heaven shines,","C"],["And often is his gold complexion dimm'd;","D"],["And every fair from fair sometime declines,","C"],["By chance or nature's changing course untrimm'd;","D"],
+ ["But thy eternal summer shall not fade,","E"],["Nor lose possession of that fair thou ow'st;","F"],["Nor shall death brag thou wander'st in his shade,","E"],["When in eternal lines to time thou grow'st:","F"],
+ ["So long as men can breathe or eyes can see,","G"],["So long lives this, and this gives life to thee.","G"]
+];
+
+const QUIZ = [
+ {q:"Wie viele Silben hat ein regelmäßiger iambischer Pentameter?", o:["8","10","12","14"], a:1, e:"Fünf Iamben à zwei Silben (da-DUM) = 10 Silben."},
+ {q:"Was ist „blank verse“?", o:["Ungereimter iambischer Pentameter","Gereimte Prosa","Freie Verse ohne Metrum","Vierzeilige Strophen"], a:0, e:"Blank verse = unrhymed iambic pentameter; Sprache der Adligen und ernster Szenen."},
+ {q:"Welche Figuren sprechen bei Shakespeare typischerweise in Prosa?", o:["Könige in Staatsreden","Liebende im Sonett","Diener, komische Figuren und Wahnsinnige","Hexen"], a:2, e:"Prosa steht für niedrigen Stand, Komik oder geistigen Zerfall (z. B. Lady Macbeth in 5.1)."},
+ {q:"Reimschema eines Shakespeare-Sonetts?", o:["ABBA ABBA CDE CDE","ABAB CDCD EFEF GG","AABB CCDD EEFF GG","ABAB BCBC CDCD EE"], a:1, e:"Drei Quartette mit Kreuzreim und ein abschließendes Reimpaar (couplet)."},
+ {q:"Was ist die „Volta“ in einem Sonett?", o:["Die erste Zeile","Die gedankliche Wendung","Der Reim im Couplet","Ein Stilmittel für Klang"], a:1, e:"Die Volta ist der Umschwung im Gedankengang, bei Shakespeare oft in Zeile 9 oder im Couplet."},
+ {q:"In welchem Akt liegt nach Freytag meist der Höhepunkt/Wendepunkt?", o:["Akt 1","Akt 2","Akt 3","Akt 5"], a:2, e:"Der Höhepunkt (climax) liegt in der Mitte, im 3. Akt."},
+ {q:"Was ist ein „aside“?", o:["Eine Regieanweisung","Eine Bemerkung ans Publikum, die andere Figuren nicht hören","Ein Monolog allein auf der Bühne","Ein Nebenhandlungsstrang"], a:1, e:"Beim aside spricht die Figur kurz zum Publikum, während andere auf der Bühne sind."},
+ {q:"Was unterscheidet einen soliloquy von einem monologue?", o:["Beim soliloquy ist die Figur allein auf der Bühne","Der soliloquy ist immer gereimt","Der monologue ist immer kürzer","Kein Unterschied"], a:0, e:"Soliloquy: allein, ehrliche Gedanken. Monologue: lange Rede vor anderen."},
+ {q:"Was bedeutet „dramatic irony“?", o:["Eine Figur sagt das Gegenteil von dem, was sie meint","Das Publikum weiß mehr als die Figuren","Ein tragisches Ende","Ein Wortspiel"], a:1, e:"Z. B. weiß das Publikum in R&J 5.3, dass Juliet nur schläft."},
+ {q:"„O brawling love! O loving hate!“ – welches Stilmittel?", o:["Alliteration","Oxymoron","Anapher","Simile"], a:1, e:"Widersprüchliche Begriffe direkt verbunden: brawling + love, loving + hate."},
+ {q:"„Fair is foul, and foul is fair“ – welches Stilmittel steht im Vordergrund?", o:["Chiasmus","Simile","Hyperbel","Euphemismus"], a:0, e:"Kreuzstellung A-B-B-A. Gleichzeitig Paradoxon, Leitmotiv „appearance vs. reality“."},
+ {q:"Wer sagt „To be, or not to be, that is the question“?", o:["Macbeth","Hamlet","Romeo","Brutus"], a:1, e:"Hamlet, 3.1 – sein berühmtester soliloquy."},
+ {q:"Wer sagt „O, beware, my lord, of jealousy; / It is the green-eyed monster“?", o:["Othello","Emilia","Iago","Cassio"], a:2, e:"Iago in 3.3 – er warnt vor Eifersucht und erzeugt sie genau damit."},
+ {q:"„Out, damned spot!“ – wer spricht, und in welcher Form?", o:["Macbeth, Blankvers","Lady Macbeth, Prosa","Die Hexen, Trochäus","Banquo, Reimpaar"], a:1, e:"Lady Macbeth in der Schlafwandelszene 5.1 – Prosa zeigt ihren geistigen Zerfall."},
+ {q:"Wer sagt „The course of true love never did run smooth“?", o:["Puck","Lysander","Romeo","Bassanio"], a:1, e:"Lysander in A Midsummer Night's Dream 1.1."},
+ {q:"Welches Ereignis ist der Wendepunkt in Romeo and Juliet?", o:["Das Fest der Capulets","Die Balkonszene","Mercutios und Tybalts Tod, Romeos Verbannung","Der Schlaftrunk"], a:2, e:"3.1: Aus der Liebesgeschichte wird eine Tragödie."},
+ {q:"In welchem Stück gibt es „The Mousetrap“ als Spiel im Spiel?", o:["Macbeth","Hamlet","Othello","A Midsummer Night's Dream"], a:1, e:"Hamlet lässt den Mord nachspielen, um Claudius' Reaktion zu testen (3.2)."},
+ {q:"Was ist die „hamartia“?", o:["Der glückliche Ausgang einer Komödie","Der tragische Fehler des Helden","Die Reinigung des Publikums","Ein Chor"], a:1, e:"Z. B. Macbeths Ehrgeiz, Othellos Eifersucht."},
+ {q:"Was ist „catharsis“?", o:["Die Selbstüberschätzung des Helden","Die Reinigung des Publikums durch Mitleid und Furcht","Die Wiedererkennung","Der Epilog"], a:1, e:"Begriff aus der Poetik des Aristoteles."},
+ {q:"Wie hießen die Zuschauer, die im Globe für einen Penny im Hof standen?", o:["Groundlings","Gallants","Yeomen","Players"], a:0, e:"Die groundlings standen im offenen Hof (yard) direkt um die Bühne."},
+ {q:"Warum ist „word scenery“ im Globe so wichtig?", o:["Es gab kaum Bühnenbild – der Text musste Ort und Zeit erschaffen","Die Schauspieler lasen vom Blatt","Es gab nur Pantomime","Der Text wurde projiziert"], a:0, e:"Tageslicht, kaum Kulissen: Ort, Zeit und Atmosphäre entstehen durch die Sprache."},
+ {q:"Wer spielte zu Shakespeares Zeit die Frauenrollen?", o:["Schauspielerinnen","Junge Männer (boy actors)","Adlige Damen","Puppen"], a:1, e:"Frauen durften nicht auf öffentlichen Bühnen spielen."},
+ {q:"Was bedeutet „wherefore“ in „wherefore art thou Romeo?“", o:["Wo","Warum","Wann","Wie"], a:1, e:"Juliet fragt: Warum bist du ausgerechnet Romeo (ein Montague)?"},
+ {q:"Was drückt „thou“ im Unterschied zu „you“ oft aus?", o:["Immer Respekt","Vertrautheit, Zuneigung – oder Herabsetzung","Plural","Nur Gott gegenüber"], a:1, e:"„Thou“ = vertraut, liebevoll oder abwertend; „you“ = höflich, distanziert. Ein Wechsel ist analyserelevant!"},
+ {q:"Welche Einstellungsgröße zeigt nur das Gesicht einer Figur?", o:["Long shot","Medium shot","Close-up","Extreme long shot"], a:2, e:"Close-up: Emotionen, Nähe, Identifikation."},
+ {q:"Welche Wirkung hat typischerweise ein „low-angle shot“?", o:["Figur wirkt schwach","Figur wirkt mächtig oder bedrohlich","Neutral","Traumhaft"], a:1, e:"Die Kamera blickt von unten – die Figur wirkt größer."},
+ {q:"Was ist nicht-diegetischer Ton?", o:["Stimmen der Figuren","Geräusche aus der Szene","Filmmusik, die nur das Publikum hört","Stille"], a:2, e:"Score oder Voice-over, außerhalb der Filmwelt."},
+ {q:"Welcher Operator gehört zu AFB III?", o:["summarise","analyse","describe","evaluate"], a:3, e:"Evaluate, assess, comment, discuss = eigene Beurteilung (AFB III)."},
+ {q:"Welche Verfilmung verlegt Romeo and Juliet in ein modernes „Verona Beach“?", o:["Zeffirelli (1968)","Baz Luhrmann (1996)","Carlei (2013)","Kurosawa (1957)"], a:1, e:"Luhrmann behält die Originalsprache, aber Setting, Waffen und Musik sind modern."},
+ {q:"In welchem Metrum sprechen die Hexen in Macbeth oft?", o:["Iambischer Pentameter","Trochäischer Tetrameter","Prosa","Hexameter"], a:1, e:"„Double, double toil and trouble“ – DUM-da, vier Hebungen. Grenzt sie als übernatürlich ab."},
+ {q:"Was bedeutet eine „feminine ending“?", o:["Eine unbetonte Zusatzsilbe am Versende","Eine Frau spricht die letzte Zeile","Ein Reim auf -ing","Ein fehlender Versfuß"], a:0, e:"Z. B. „that is the ques-TION“ → 11 Silben, weiche, offene Wirkung."},
+ {q:"Warum enden viele Szenen mit einem Reimpaar (rhyming couplet)?", o:["Zufall","Als akustisches Signal für das Szenenende und zur Betonung","Weil Prosa verboten war","Damit das Publikum mitsingt"], a:1, e:"Ohne Vorhang signalisierte der Reim das Ende und machte die Aussage einprägsam."},
+ {q:"Wann wurde das Globe Theatre eröffnet?", o:["1564","1599","1616","1623"], a:1, e:"1599 von den Lord Chamberlain's Men; 1613 abgebrannt, 1614 wieder aufgebaut."},
+ {q:"Was ist die „Great Chain of Being“?", o:["Eine Theaterkette","Die gottgegebene Ordnung aller Dinge vom Gott bis zum Stein","Ein Liebessonett","Eine Schauspieltruppe"], a:1, e:"Wer die Ordnung stört (z. B. Königsmord in Macbeth), bringt Chaos über die Welt."},
+ {q:"Welcher Satz beschreibt die PEE/PEEL-Methode richtig?", o:["Point – Evidence – Explanation – Link","Plot – Event – Ending","Prologue – Exposition – Epilogue","Pause – Emphasis – End"], a:0, e:"Aussage → Beleg (Zitat) → Erklärung der Wirkung → Rückbezug zur These."}
+];
+
+const CHECKLIST = [
+ "Einleitung: Autor, Titel, Jahr, Gattung, Akt/Szene, Thema und Leitthese",
+ "Szene im Handlungsverlauf eingeordnet (was passiert davor/danach?)",
+ "Gliederung mit Zeilenangaben",
+ "Jede Behauptung mit Zitat belegt (l. / ll. / Akt.Szene.Zeile)",
+ "Stilmittel immer mit Wirkung/Funktion, nicht nur benannt",
+ "Vers / Prosa / Reim und Metrum berücksichtigt",
+ "Dramatische Mittel (soliloquy, aside, dramatic irony) erklärt",
+ "Present tense verwendet",
+ "Operator beachtet (analyse ≠ summarise ≠ comment)",
+ "Keine Nacherzählung im Analyseteil",
+ "Schluss fasst zusammen, keine neuen Argumente",
+ "Linking words und abwechslungsreiche Formulierungen",
+ "Am Ende: Rechtschreibung, Grammatik, s bei 3. Person Singular"
+];
+
+/* ============ State ============ */
+const state = {
+  seen: new Set(store.get("seen", [])),
+  known: new Set(store.get("known", [])),
+  best: store.get("best", null),
+  checks: new Set(store.get("checks", [])),
+  play: store.get("play", "rj"),
+  schema: store.get("schema", "szene"),
+  freyPlay: "rj", freyAct: 3,
+  glossCat: "Alle", glossQ: "",
+  fcCat: "Alle", fcIdx: 0, fcDeck: null,
+  quiz: null,
+  scanIdx: 0
+};
+
+function markSeen(id){
+  state.seen.add(id); store.set("seen", [...state.seen]);
+  const pct = Math.round(state.seen.size / SECTIONS.length * 100);
+  document.getElementById("prog-bar").style.width = pct + "%";
+  document.getElementById("prog-label").textContent = `Fortschritt: ${state.seen.size} von ${SECTIONS.length} Kapiteln`;
+}
+
+/* ============ Navigation ============ */
+function renderNav(cur){
+  const html = SECTIONS.map(s => `<a href="#${s.id}" class="${state.seen.has(s.id)?"seen":""}" ${s.id===cur?'aria-current="page"':""}><span>${s.name}</span><i class="dot"></i></a>`).join("");
+  document.getElementById("nav").innerHTML = html;
+  document.getElementById("chips").innerHTML = SECTIONS.map(s => `<a href="#${s.id}" ${s.id===cur?'aria-current="page"':""}>${s.name}</a>`).join("");
+  const active = document.querySelector('#chips a[aria-current="page"]');
+  if(active) active.scrollIntoView({block:"nearest", inline:"center"});
+}
+
+function route(){
+  const id = (location.hash || "#start").slice(1);
+  const sec = SECTIONS.find(s => s.id === id) ? id : "start";
+  markSeen(sec);
+  renderNav(sec);
+  const main = document.getElementById("main");
+  main.innerHTML = `<div class="page">${VIEWS[sec]()}</div>`;
+  if(AFTER[sec]) AFTER[sec]();
+  window.scrollTo(0,0);
+}
+
+/* ============ Views ============ */
+const VIEWS = {};
+const AFTER = {};
+
+VIEWS.start = () => {
+  const path = [
+   ["kontext","Kontext & Globe","Zeit, Theater, Weltbild"],
+   ["drama","Dramenstruktur","5 Akte, Freytag, Tragödie"],
+   ["sprache","Vers & Sprache","Blank verse, Sonett, Metrum"],
+   ["stilmittel","Stilmittel","26 Mittel mit Wirkung"],
+   ["werke","Die Stücke","7 Stücke Akt für Akt"],
+   ["schemas","Analyse-Schemas","Aufbau für jede Aufgabe"],
+   ["film","Filmanalyse","Kamera, Schnitt, Ton"],
+   ["karten","Karteikarten","Begriffe wiederholen"],
+   ["quiz","Quiz","Wissen testen"],
+   ["klausur","Klausur-Check","Checkliste & Zeitplan"]
+  ];
+  return `
+  <section class="hero">
+    <div class="stack">
+      <span class="eyebrow">Englisch · Qualifikationsphase 2 · Abitur</span>
+      <h1>Shakespeare verstehen, <em>analysieren</em>, bestehen.</h1>
+      <p class="lead">Alles für die Q2 an einem Ort: Kontext, Dramenaufbau, Vers und Metrum, Stilmittel mit Wirkung, die wichtigsten Stücke, Schritt-für-Schritt-Schemas für jede Aufgabenart, Filmanalyse, Karteikarten und Quiz.</p>
+      <div class="row"><a class="btn primary" href="#schemas">Zu den Analyse-Schemas</a><a class="btn" href="#quiz">Quiz starten</a></div>
+    </div>
+    <p class="hero-quote">“All the world's a stage, / And all the men and women merely players”<i>Jaques, <span class="en">As You Like It</span> 2.7</i></p>
+  </section>
+  <section class="section">
+    <div class="stats">
+      <div class="stat"><b>${state.seen.size}/${SECTIONS.length}</b><span>Kapitel geöffnet</span></div>
+      <div class="stat"><b>${state.known.size}</b><span>Karteikarten gewusst</span></div>
+      <div class="stat"><b>${state.best!==null ? state.best+"/10" : "–"}</b><span>Bestes Quiz-Ergebnis</span></div>
+      <div class="stat"><b>${state.checks.size}/${CHECKLIST.length}</b><span>Klausur-Checks</span></div>
+    </div>
+  </section>
+  <section class="section">
+    <h2>Dein Lernpfad</h2>
+    <p class="muted">Die Reihenfolge baut aufeinander auf: erst Grundlagen, dann Werkzeuge, dann Anwendung und Training.</p>
+    <div class="path">${path.map(p=>`<a href="#${p[0]}" class="${state.seen.has(p[0])?"seen":""}"><b>${p[1]}</b><span>${p[2]}</span></a>`).join("")}</div>
+  </section>
+  <section class="section">
+    <h2>Das Wichtigste in 60 Sekunden</h2>
+    <div class="grid g3">
+      <div class="panel stack"><span class="eyebrow">Form</span><p><b>Blank verse</b> = ungereimter iambischer Pentameter (da-DUM ×5). Adel und ernste Szenen. <b>Prosa</b> = niedrige Figuren, Komik, Wahnsinn. <b>Reimpaar</b> = Szenenende.</p></div>
+      <div class="panel stack"><span class="eyebrow">Aufbau</span><p>Fünf Akte: Exposition – steigende Handlung – <b>Wendepunkt (Akt 3)</b> – fallende Handlung mit Verzögerung – Katastrophe bzw. Auflösung.</p></div>
+      <div class="panel stack"><span class="eyebrow">Analyse</span><p>Nie nur benennen. Immer <b>Mittel → Zitat → Wirkung</b>: “The oxymoron ‘loving hate’ (1.1) emphasises Romeo's inner conflict.”</p></div>
+    </div>
+    <div class="tip"><b>Q2-Fokus:</b> Viele Lehrpläne (z. B. NRW) behandeln das Thema „The impact of Shakespearean drama on young audiences today“: Auszüge aus Dramen, Vergleich mit Filmszenen und die Frage, warum Shakespeare heute noch relevant ist.</div>
+  </section>`;
+};
+
+VIEWS.kontext = () => `
+  <header class="page-head"><span class="eyebrow">Kapitel 1</span><h1>Kontext & Globe</h1><p class="lead">Wer Shakespeare analysiert, braucht den historischen Hintergrund: Er erklärt Weltbild, Figuren und Bühnensprache.</p></header>
+  <section class="section"><h2>William Shakespeare (1564–1616)</h2>
+    <div class="table-wrap"><table><thead><tr><th>Jahr</th><th>Ereignis</th></tr></thead><tbody>
+      <tr><td class="mono">1564</td><td>Geboren in Stratford-upon-Avon (getauft am 26. April)</td></tr>
+      <tr><td class="mono">1582</td><td>Heirat mit Anne Hathaway; drei Kinder (Susanna, Hamnet und Judith)</td></tr>
+      <tr><td class="mono">ca. 1590</td><td>Schauspieler und Autor in London</td></tr>
+      <tr><td class="mono">1594</td><td>Mitglied der Truppe <span class="en">Lord Chamberlain's Men</span></td></tr>
+      <tr><td class="mono">1599</td><td>Eröffnung des <b>Globe Theatre</b> am Südufer der Themse</td></tr>
+      <tr><td class="mono">1603</td><td>Tod Elizabeths I.; James I. wird König, die Truppe heißt nun <span class="en">King's Men</span></td></tr>
+      <tr><td class="mono">1613</td><td>Das Globe brennt während einer Aufführung von <span class="en">Henry VIII</span> ab (1614 wieder aufgebaut)</td></tr>
+      <tr><td class="mono">1616</td><td>Tod in Stratford (23. April)</td></tr>
+      <tr><td class="mono">1623</td><td><b>First Folio</b>: erste Gesamtausgabe mit 36 Stücken</td></tr>
+    </tbody></table></div>
+    <p>Werk: rund 37–39 Stücke, 154 Sonette, zwei lange Versdichtungen. Er prägte hunderte Wörter und Redewendungen, die noch heute im Englischen verwendet werden (z. B. <span class="en">“break the ice”, “wild-goose chase”, “in a pickle”</span>).</p>
+  </section>
+  <section class="section"><h2>Das Elisabethanische Zeitalter</h2>
+    <div class="grid g2">
+      <div class="panel stack"><h3>Politik & Gesellschaft</h3><ul class="bul">
+        <li><b>Elizabeth I.</b> (1558–1603), danach <b>James I.</b> (1603–1625, <span class="en">Jacobean era</span>)</li>
+        <li>Sieg über die spanische Armada 1588 → Nationalstolz</li>
+        <li>Reformation: Konflikt Protestanten und Katholiken</li>
+        <li>Streng hierarchische, patriarchalische Gesellschaft; Frauen dem Vater bzw. Ehemann untergeordnet</li>
+        <li>Pest-Epidemien schlossen immer wieder die Theater</li></ul></div>
+      <div class="panel stack"><h3>Weltbild</h3><ul class="bul">
+        <li><b>Great Chain of Being</b>: gottgegebene Ordnung von Gott über Engel, König, Adel, Volk, Tiere bis zu Pflanzen und Steinen. Wer sie stört, bringt Chaos (Königsmord in <span class="en">Macbeth</span> → Stürme, Pferde fressen sich gegenseitig).</li>
+        <li><b>Divine Right of Kings</b>: Der König regiert von Gottes Gnaden.</li>
+        <li><b>Four humours</b>: Blut, Schleim, gelbe und schwarze Galle bestimmen das Temperament (Melancholie!).</li>
+        <li>Glaube an Übernatürliches: Hexen, Geister, Vorzeichen. James I. schrieb selbst ein Buch über Hexen (<span class="en">Daemonologie</span>, 1597).</li>
+        <li><b>Renaissance</b>: neues Interesse an Antike, Individuum, Humanismus.</li></ul></div>
+    </div>
+  </section>
+  <section class="section"><h2>Das Globe Theatre</h2>
+    <div class="grid g2">
+      <div class="panel">
+        <svg viewBox="0 0 320 300" role="img" aria-label="Grundriss des Globe Theatre von oben: runder Bau mit Galerien, Hof für die Groundlings und vorspringende Bühne vor dem Tiring House" style="width:100%;height:auto">
+          <circle cx="160" cy="150" r="130" fill="var(--surface-2)" stroke="var(--ink)" stroke-width="2"/>
+          <circle cx="160" cy="150" r="100" fill="var(--bg)" stroke="var(--ink)" stroke-width="1.5"/>
+          <rect x="112" y="40" width="96" height="26" fill="var(--gold-soft)" stroke="var(--ink)"/>
+          <rect x="118" y="66" width="84" height="74" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2"/>
+          <circle cx="160" cy="112" r="6" fill="none" stroke="var(--accent)" stroke-dasharray="3 2"/>
+          <text x="160" y="57" text-anchor="middle" font-size="11" fill="var(--ink)" font-family="Alegreya Sans, sans-serif">Tiring house</text>
+          <text x="160" y="92" text-anchor="middle" font-size="12" font-weight="700" fill="var(--accent)" font-family="Alegreya Sans, sans-serif">Thrust stage</text>
+          <text x="160" y="132" text-anchor="middle" font-size="10" fill="var(--accent)" font-family="Alegreya Sans, sans-serif">trapdoor</text>
+          <text x="160" y="200" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)" font-family="Alegreya Sans, sans-serif">Yard: groundlings</text>
+          <text x="160" y="215" text-anchor="middle" font-size="10" fill="var(--muted)" font-family="Alegreya Sans, sans-serif">stehend, 1 Penny, offen</text>
+          <text x="160" y="268" text-anchor="middle" font-size="11" fill="var(--ink)" font-family="Alegreya Sans, sans-serif">Galleries (3 Ränge, überdacht)</text>
+          <text x="160" y="22" text-anchor="middle" font-size="10" fill="var(--muted)" font-family="Alegreya Sans, sans-serif">darüber: “the heavens” (Bühnendach)</text>
+        </svg>
+      </div>
+      <div class="stack">
+        <ul class="bul">
+          <li>Runder bzw. vieleckiger Holzbau („this wooden O“), bis zu ca. 3.000 Zuschauer</li>
+          <li>Open-air: Aufführungen am Nachmittag bei Tageslicht</li>
+          <li><b>Thrust stage</b>: Bühne ragt ins Publikum → Nähe, ideal für <span class="en">soliloquies</span> und <span class="en">asides</span></li>
+          <li><b>Groundlings</b> standen im Hof (1 Penny), Wohlhabende saßen in den Galerien</li>
+          <li><b>Trapdoor</b> für Geister und Gräber, <b>heavens</b> für Auftritte von oben</li>
+          <li>Kaum Kulissen → <b>word scenery</b>: Ort, Zeit, Wetter werden durch Sprache erzeugt</li>
+          <li>Prächtige Kostüme zeigen Stand und Rolle</li>
+          <li>Frauenrollen spielten <b>boy actors</b></li>
+          <li>Publikum aus allen Schichten → Mischung aus Tiefsinn und derber Komik</li>
+        </ul>
+        <div class="tip"><b>Analyse-Tipp:</b> Wenn eine Figur Nacht, Sturm oder Ort beschreibt („'Tis now the very witching time of night“), ist das oft word scenery. Nenne die Funktion: Atmosphäre schaffen, weil es kein Bühnenlicht gab.</div>
+      </div>
+    </div>
+  </section>
+  <section class="section"><h2>Gattungen</h2>
+    <div class="table-wrap"><table><thead><tr><th>Gattung</th><th>Merkmale</th><th>Beispiele</th></tr></thead><tbody>
+      <tr><td><b>Tragedy</b></td><td>Hochgestellter Held, tragischer Fehler, Untergang, Tod am Ende, Katharsis</td><td>Romeo and Juliet, Macbeth, Hamlet, Othello, King Lear, Julius Caesar</td></tr>
+      <tr><td><b>Comedy</b></td><td>Verwechslungen, Verkleidung, Liebeswirren, Wortwitz, glückliches Ende mit Hochzeit(en)</td><td>A Midsummer Night's Dream, Twelfth Night, Much Ado About Nothing, As You Like It</td></tr>
+      <tr><td><b>History</b></td><td>Englische Geschichte, Königtum, Macht, Legitimation</td><td>Richard III, Henry V, Richard II</td></tr>
+      <tr><td><b>Romance / problem play</b></td><td>Mischformen, Magie, Versöhnung bzw. moralisch mehrdeutig</td><td>The Tempest, The Winter's Tale, The Merchant of Venice</td></tr>
+    </tbody></table></div>
+  </section>
+  <section class="section"><h2>Warum Shakespeare heute noch?</h2>
+    <div class="grid g2">
+      <div class="panel stack"><h4>Pro Relevanz</h4><ul class="bul"><li>Universelle Themen: Liebe, Macht, Eifersucht, Identität, Generationenkonflikt, Rassismus</li><li>Viele moderne Adaptionen (Filme, Serien, Musicals, Social Media)</li><li>Psychologisch komplexe Figuren</li><li>Einfluss auf die englische Sprache</li><li>Kulturelles Erbe und Allgemeinbildung</li></ul></div>
+      <div class="panel stack"><h4>Contra / Einwände</h4><ul class="bul"><li>Schwer verständliche Sprache (Early Modern English)</li><li>Veraltete Rollenbilder, Rassismus und Antisemitismus in den Texten</li><li>Lange Stücke, andere Sehgewohnheiten</li><li>Andere, diversere Autorinnen und Autoren kommen zu kurz</li></ul></div>
+    </div>
+  </section>`;
+
+VIEWS.drama = () => `
+  <header class="page-head"><span class="eyebrow">Kapitel 2</span><h1>Dramenstruktur</h1><p class="lead">Shakespeares Stücke haben fünf Akte. Gustav Freytag beschrieb den typischen Spannungsverlauf als Pyramide. Wähle ein Stück und klicke auf die Akte.</p></header>
+  <section class="section freytag">
+    <div class="row"><label for="frey-play" class="eyebrow">Stück</label>
+      <select id="frey-play">${PLAYS.map(p=>`<option value="${p.id}" ${p.id===state.freyPlay?"selected":""}>${p.title}</option>`).join("")}</select></div>
+    <div class="panel"><div style="overflow-x:auto">
+      <svg viewBox="0 0 660 270" role="img" aria-label="Freytag-Pyramide mit fünf Akten" id="frey-svg" style="min-width:520px">
+        <line class="axis" x1="20" y1="230" x2="640" y2="230"/>
+        <path class="area" d="M30 230 L140 205 L330 55 L510 175 L630 230 Z"/>
+        <path class="curve" d="M30 230 L140 205 L330 55 L510 175 L630 230"/>
+        ${[
+          [85,215,"I","Exposition"],[235,130,"II","Rising action"],[330,55,"III","Climax"],[420,115,"IV","Falling action"],[570,205,"V","Catastrophe"]
+        ].map((n,i)=>`<g class="node ${i+1===state.freyAct?"on":""}" data-act="${i+1}" tabindex="0" role="button" aria-label="Akt ${n[2]}: ${n[3]}">
+          <circle cx="${n[0]}" cy="${n[1]}" r="16"/><text class="roman" x="${n[0]}" y="${n[1]+5}" text-anchor="middle">${n[2]}</text>
+          <text x="${i===3? n[0]+24 : n[0]}" y="${i===3? n[1]-12 : n[1]-26}" text-anchor="${i===3?"start":"middle"}">${n[3]}</text></g>`).join("")}
+      </svg></div>
+      <div id="frey-info" class="stack" style="margin-top:12px"></div>
+    </div>
+  </section>
+  <section class="section"><h2>Die fünf Phasen</h2>
+    <div class="table-wrap"><table><thead><tr><th>Akt</th><th>Phase</th><th>Funktion</th></tr></thead><tbody>
+      <tr><td class="mono">I</td><td><b>Exposition</b></td><td>Einführung von Figuren, Ort, Zeit, Vorgeschichte und Grundkonflikt; ein erregendes Moment (inciting incident) setzt die Handlung in Gang.</td></tr>
+      <tr><td class="mono">II</td><td><b>Rising action / complication</b></td><td>Der Konflikt verschärft sich, Spannung steigt, Intrigen entstehen.</td></tr>
+      <tr><td class="mono">III</td><td><b>Climax / turning point</b></td><td>Höhepunkt und Wendepunkt (peripeteia): Das Schicksal des Helden kippt.</td></tr>
+      <tr><td class="mono">IV</td><td><b>Falling action</b></td><td>Folgen des Wendepunkts; ein <b>retarding moment</b> (Verzögerung) lässt noch einmal auf Rettung hoffen.</td></tr>
+      <tr><td class="mono">V</td><td><b>Catastrophe / denouement</b></td><td>Tragödie: Untergang und Tod, Ordnung wird wiederhergestellt. Komödie: Auflösung (resolution), Hochzeit.</td></tr>
+    </tbody></table></div>
+  </section>
+  <section class="section"><h2>Tragödie und Komödie</h2>
+    <div class="grid g2">
+      <div class="panel stack"><h3>Elemente der Tragödie</h3><dl class="kv">
+        <dt>Tragic hero</dt><dd>hochgestellt, bewundernswert, aber fehlbar</dd>
+        <dt>Hamartia</dt><dd>tragischer Fehler (Ehrgeiz, Eifersucht, Zögern)</dd>
+        <dt>Hubris</dt><dd>Selbstüberschätzung</dd>
+        <dt>Peripeteia</dt><dd>Umschwung des Glücks</dd>
+        <dt>Anagnorisis</dt><dd>Erkenntnis, oft zu spät</dd>
+        <dt>Nemesis</dt><dd>unausweichliche Vergeltung</dd>
+        <dt>Catharsis</dt><dd>Reinigung durch pity and fear</dd></dl></div>
+      <div class="panel stack"><h3>Elemente der Komödie</h3><ul class="bul">
+        <li>Liebeswirren, Hindernisse durch Eltern oder Gesetz</li>
+        <li>Verwechslung, Verkleidung (oft Frauen als Männer)</li>
+        <li>Ortswechsel in eine „grüne Welt“ (Wald, Land)</li>
+        <li>Komische Figuren (clowns, fools), Wortwitz, Wortspiele</li>
+        <li>Wiederherstellung der Ordnung, Hochzeit(en) am Ende</li></ul></div>
+    </div>
+  </section>
+  <section class="section"><h2>Dramatische Mittel</h2>
+    <div class="gloss">${DRAMA_TERMS.map(d=>`<div class="gcard"><h4><span>${d.t}</span><span class="tag">${d.de}</span></h4><p>${d.def}</p>${d.ex?`<p class="muted" style="font-size:.92rem">Beispiel: ${d.ex}</p>`:""}</div>`).join("")}</div>
+  </section>`;
+
+AFTER.drama = () => {
+  const info = document.getElementById("frey-info");
+  const phases = ["Exposition","Rising action","Climax / turning point","Falling action","Catastrophe / resolution"];
+  const draw = () => {
+    const p = PLAYS.find(x=>x.id===state.freyPlay);
+    document.querySelectorAll("#frey-svg .node").forEach(n=>n.classList.toggle("on", +n.dataset.act===state.freyAct));
+    const turn = p.turn===state.freyAct ? ` <span class="tag gold">Wendepunkt</span>` : "";
+    info.innerHTML = `<div class="row"><span class="eyebrow">Akt ${state.freyAct} · ${phases[state.freyAct-1]}</span>${turn}</div><p><b class="en">${p.title}:</b> ${p.acts[state.freyAct-1]}</p>`;
+  };
+  document.querySelectorAll("#frey-svg .node").forEach(n=>{
+    const go = () => { state.freyAct = +n.dataset.act; draw(); };
+    n.addEventListener("click", go);
+    n.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); go(); } });
+  });
+  document.getElementById("frey-play").addEventListener("change", e=>{ state.freyPlay = e.target.value; draw(); });
+  draw();
+};
+
+VIEWS.sprache = () => `
+  <header class="page-head"><span class="eyebrow">Kapitel 3</span><h1>Vers & Sprache</h1><p class="lead">Die Form verrät viel: Wer spricht in Vers, wer in Prosa, wann wird gereimt, wann bricht der Rhythmus? Genau das macht eine gute Analyse aus.</p></header>
+  <section class="section"><h2>Die drei Sprachformen</h2>
+    <div class="table-wrap"><table><thead><tr><th>Form</th><th>Merkmale</th><th>Wer / wann</th><th>Beispiel</th></tr></thead><tbody>
+      <tr><td><b>Blank verse</b></td><td>ungereimter iambischer Pentameter</td><td>Adlige, ernste Themen, wichtige Gedanken, Soliloquies</td><td class="en">“To be, or not to be, that is the question”</td></tr>
+      <tr><td><b>Prose</b></td><td>kein Metrum, kein Reim</td><td>Diener, einfache Leute, Komik, Briefe, Wahnsinn, private Gespräche</td><td class="en">Lady Macbeth: “Out, damned spot! Out, I say!”</td></tr>
+      <tr><td><b>Rhymed verse</b></td><td>Reimpaare (heroic couplets), Sonettform</td><td>Szenenende, Liebende, Übernatürliches, Prologe, Sentenzen</td><td class="en">“The play's the thing / Wherein I'll catch the conscience of the king.”</td></tr>
+    </tbody></table></div>
+    <div class="tip"><b>Wichtig für die Analyse:</b> Ein Wechsel der Form ist immer bedeutsam. Wechselt eine adlige Figur in Prosa, zeigt das oft Kontrollverlust, Wahnsinn oder Herablassung. Sprechen zwei Figuren plötzlich in Reimen oder teilen sich Verszeilen (shared lines), zeigt das Harmonie und Nähe.</div>
+  </section>
+  <section class="section"><h2>Metrum: Versfüße</h2>
+    <div class="table-wrap"><table><thead><tr><th>Versfuß</th><th>Muster</th><th>Beispielwort</th><th>Wirkung</th></tr></thead><tbody>
+      <tr><td><b>Iamb</b> (Iambus)</td><td class="mono">˘ ´ · da-DUM</td><td class="en">be-FORE, a-LONE</td><td>natürlich, wie Herzschlag, Sprechrhythmus</td></tr>
+      <tr><td><b>Trochee</b> (Trochäus)</td><td class="mono">´ ˘ · DUM-da</td><td class="en">DOU-ble, TROU-ble</td><td>fallend, beschwörend (Hexen), energisch</td></tr>
+      <tr><td><b>Spondee</b> (Spondeus)</td><td class="mono">´ ´ · DUM-DUM</td><td class="en">“Out, out”</td><td>Nachdruck, Schwere, Verlangsamung</td></tr>
+      <tr><td><b>Anapaest</b></td><td class="mono">˘ ˘ ´ · da-da-DUM</td><td class="en">in-ter-VENE</td><td>schnell, galoppierend</td></tr>
+      <tr><td><b>Dactyl</b> (Daktylus)</td><td class="mono">´ ˘ ˘ · DUM-da-da</td><td class="en">MER-ri-ly</td><td>tänzerisch, fallend</td></tr>
+    </tbody></table></div>
+    <p>Anzahl der Füße pro Vers: <b>trimeter</b> (3), <b>tetrameter</b> (4), <b>pentameter</b> (5), <b>hexameter</b> (6). Also: <i>iambic pentameter</i> = fünf Iamben = zehn Silben.</p>
+    <div class="grid g3">
+      <div class="panel stack"><h4>Feminine ending</h4><p>Unbetonte Zusatzsilbe am Versende (11 Silben). Wirkt offen, zweifelnd, unruhig.</p></div>
+      <div class="panel stack"><h4>Trochaic inversion</h4><p>Ein Trochäus ersetzt einen Iambus, oft am Versanfang. Betont das erste Wort.</p></div>
+      <div class="panel stack"><h4>Caesura</h4><p>Sprechpause mitten im Vers (Satzzeichen). Zeigt Zögern, Nachdenken, Bruch.</p></div>
+      <div class="panel stack"><h4>Enjambment</h4><p>Der Satz läuft über das Versende hinaus. Wirkt fließend, drängend oder emotional.</p></div>
+      <div class="panel stack"><h4>Shared line</h4><p>Ein Vers auf zwei Sprecher verteilt. Zeigt Tempo, Einigkeit oder Konflikt.</p></div>
+      <div class="panel stack"><h4>Irregular metre</h4><p>Unregelmäßiger Rhythmus spiegelt innere Unruhe der Figur.</p></div>
+    </div>
+  </section>
+  <section class="section"><h2>Metrum-Trainer</h2>
+    <p class="muted">Tippe die Silben an, die du betont liest. Dann prüfen. Tipp: Lies laut und übertrieben.</p>
+    <div class="panel stack" id="scan"></div>
+  </section>
+  <section class="section"><h2>Das Shakespeare-Sonett: Sonnet 18</h2>
+    <div class="grid g2">
+      <div class="panel"><div class="sonnet">${SONNET18.map((l,i)=>`${i===4||i===8||i===12?'<div class="gap"></div>':""}<span class="ln">${i+1}</span><span class="${i>=12?"couplet":""}">${i===8?'<span class="volta">But</span>'+esc(l[0].slice(3)):esc(l[0])}</span><span class="rh r${l[1]}">${l[1]}</span>`).join("")}</div></div>
+      <div class="stack">
+        <dl class="kv">
+          <dt>Form</dt><dd>14 Verse: 3 Quartette + 1 Couplet</dd>
+          <dt>Reimschema</dt><dd class="mono">ABAB CDCD EFEF GG</dd>
+          <dt>Metrum</dt><dd>iambischer Pentameter</dd>
+          <dt>Volta</dt><dd>Vers 9, „But“: vom vergänglichen Sommer zur ewigen Schönheit</dd>
+          <dt>Thema</dt><dd>Vergänglichkeit der Schönheit; Dichtung macht unsterblich</dd>
+        </dl>
+        <ul class="bul">
+          <li><b>Q1:</b> Vergleich mit einem Sommertag – der Geliebte ist schöner und ausgeglichener; der Sommer ist zu kurz.</li>
+          <li><b>Q2:</b> Die Sonne („the eye of heaven“, Personifikation) ist zu heiß oder verdeckt; alle Schönheit vergeht.</li>
+          <li><b>Q3:</b> Wendung: Der „ewige Sommer“ des Geliebten vergeht nicht, nicht einmal der Tod kann prahlen.</li>
+          <li><b>Couplet:</b> Solange Menschen lesen, lebt das Gedicht – und mit ihm der Geliebte.</li>
+        </ul>
+        <div class="tip"><b>Vergleich:</b> Das italienische (Petrarca-)Sonett hat Oktett + Sextett (ABBAABBA CDECDE), Volta nach Vers 8. Shakespeares <span class="en">Sonnet 130</span> („My mistress' eyes are nothing like the sun“) parodiert diese idealisierende Tradition.</div>
+      </div>
+    </div>
+    <p class="muted">Auch <span class="en">Romeo and Juliet</span> enthält Sonette: der Prolog und das erste Gespräch der Liebenden (1.5), ein geteiltes Sonett, das mit einem Kuss endet.</p>
+  </section>
+  <section class="section"><h2>Early Modern English</h2>
+    <div class="grid g2">
+      <div class="table-wrap"><table><thead><tr><th>Shakespeare</th><th>Heute</th></tr></thead><tbody>
+        <tr><td class="en">thou / thee / thy / thine</td><td>you (Subj.) / you (Obj.) / your / yours</td></tr>
+        <tr><td class="en">art, hast, dost, wilt</td><td>are, have, do, will (bei thou)</td></tr>
+        <tr><td class="en">hath, doth, -eth (loveth)</td><td>has, does, -s (loves)</td></tr>
+        <tr><td class="en">wherefore</td><td>why</td></tr>
+        <tr><td class="en">ere · anon · hence · whither</td><td>before · soon · from here · where to</td></tr>
+        <tr><td class="en">'tis · 'twas · o'er · e'en</td><td>it is · it was · over · even</td></tr>
+        <tr><td class="en">prithee · marry · alas</td><td>please · indeed · unfortunately</td></tr>
+      </tbody></table></div>
+      <div class="panel stack"><h3>Thou oder you?</h3>
+        <p><b class="en">thou</b>: vertraut, zärtlich (Liebende, Freunde), zu Untergebenen, oder beleidigend.</p>
+        <p><b class="en">you</b>: höflich, respektvoll, distanziert; Kinder zu Eltern, Untergebene zu Höhergestellten.</p>
+        <div class="tip"><b>Analyse-Gold:</b> Wechselt eine Figur von <i>you</i> zu <i>thou</i> (oder umgekehrt), ändert sich die Beziehung: plötzliche Nähe, Wut oder Verachtung. Das ist ein starkes Argument in jeder Szenenanalyse.</div>
+      </div>
+    </div>
+  </section>`;
+
+AFTER.sprache = () => {
+  const box = document.getElementById("scan");
+  let marks = [];
+  const draw = () => {
+    const s = SCANSION[state.scanIdx];
+    marks = s.syl.map(()=>0);
+    box.innerHTML = `
+      <div class="row" style="justify-content:space-between"><span class="eyebrow">Vers ${state.scanIdx+1} von ${SCANSION.length} · ${esc(s.src)}</span>
+        <div class="row"><button class="btn small" id="scan-prev" aria-label="Vorheriger Vers">←</button><button class="btn small" id="scan-next" aria-label="Nächster Vers">→</button></div></div>
+      <p class="quote">${esc(s.line)}</p>
+      <div class="scan-line" id="scan-syl">${s.syl.map((x,i)=>`<button class="syl" data-i="${i}" aria-pressed="false"><span class="mk">˘</span><span>${esc(x)}</span></button>`).join("")}</div>
+      <div class="row"><label for="scan-meter" class="muted">Metrum:</label>
+        <select id="scan-meter"><option value="">bitte wählen</option>${[...new Set(SCANSION.map(x=>x.meter))].map(m=>`<option>${m}</option>`).join("")}</select>
+        <button class="btn primary" id="scan-check">Prüfen</button><button class="btn" id="scan-show">Lösung zeigen</button></div>
+      <div id="scan-fb"></div>`;
+    box.querySelectorAll(".syl").forEach(b=>b.addEventListener("click",()=>{
+      const i=+b.dataset.i; marks[i]=marks[i]?0:1;
+      b.setAttribute("aria-pressed", marks[i]?"true":"false");
+      b.querySelector(".mk").textContent = marks[i]?"´":"˘";
+      b.classList.remove("right","wrong");
+    }));
+    const solution = (withMarks) => {
+      box.querySelectorAll(".syl").forEach((b,i)=>{
+        const want = s.pat[i]==="1";
+        if(withMarks){ b.classList.toggle("right", (marks[i]===1)===want); b.classList.toggle("wrong", (marks[i]===1)!==want); }
+        else { marks[i]=want?1:0; b.setAttribute("aria-pressed", want?"true":"false"); b.querySelector(".mk").textContent = want?"´":"˘"; b.classList.add("right"); }
+      });
+    };
+    box.querySelector("#scan-check").addEventListener("click",()=>{
+      solution(true);
+      const ok = marks.join("")===s.pat;
+      const m = box.querySelector("#scan-meter").value;
+      const mOk = m===s.meter;
+      const fb = box.querySelector("#scan-fb");
+      fb.innerHTML = `<div class="feedback ${ok&&mOk?"ok":"no"}">${ok?"Betonungen richtig.":"Noch nicht ganz: rot markierte Silben prüfen."} ${m? (mOk?"Metrum richtig.":"Metrum stimmt nicht."):"Wähle noch das Metrum."}</div>${ok&&mOk?`<p style="margin-top:8px">${esc(s.note)}</p>`:""}`;
+    });
+    box.querySelector("#scan-show").addEventListener("click",()=>{
+      solution(false);
+      box.querySelector("#scan-meter").value = s.meter;
+      box.querySelector("#scan-fb").innerHTML = `<div class="feedback info"><span class="mono">${s.pat.split("").map(c=>c==="1"?"´":"˘").join(" ")}</span> · <b>${esc(s.meter)}</b><p style="margin-top:6px">${esc(s.note)}</p></div>`;
+    });
+    box.querySelector("#scan-prev").addEventListener("click",()=>{ state.scanIdx=(state.scanIdx-1+SCANSION.length)%SCANSION.length; draw(); });
+    box.querySelector("#scan-next").addEventListener("click",()=>{ state.scanIdx=(state.scanIdx+1)%SCANSION.length; draw(); });
+  };
+  draw();
+};
+
+VIEWS.stilmittel = () => {
+  const cats = ["Alle", ...new Set(DEVICES.map(d=>d.cat))];
+  return `
+  <header class="page-head"><span class="eyebrow">Kapitel 4</span><h1>Stilmittel</h1><p class="lead">Jedes Stilmittel mit Definition, echtem Shakespeare-Beispiel und seiner Wirkung. In der Klausur zählt vor allem die Wirkung.</p></header>
+  <section class="section">
+    <div class="peel">
+      <div><b>Device</b><p>Benenne das Mittel.</p></div>
+      <div><b>Quote</b><p>Zitiere mit Stellenangabe.</p></div>
+      <div><b>Effect</b><p>Erkläre die Wirkung aufs Publikum.</p></div>
+      <div><b>Function</b><p>Was bedeutet das für Figur, Thema, Stück?</p></div>
+    </div>
+    <div class="row">
+      <input type="search" id="g-q" placeholder="Suchen, z. B. irony, Macbeth …" value="${esc(state.glossQ)}" aria-label="Stilmittel suchen" style="flex:1 1 220px">
+    </div>
+    <div class="row" id="g-cats">${cats.map(c=>`<button class="chip" data-c="${c}" aria-pressed="${c===state.glossCat}">${c}</button>`).join("")}</div>
+    <div class="gloss" id="g-list"></div>
+  </section>`;
+};
+AFTER.stilmittel = () => {
+  const list = document.getElementById("g-list");
+  const draw = () => {
+    const q = state.glossQ.toLowerCase();
+    const items = DEVICES.filter(d => (state.glossCat==="Alle"||d.cat===state.glossCat) && (!q || JSON.stringify(d).toLowerCase().includes(q)));
+    list.innerHTML = items.length ? items.map(d=>`<article class="gcard">
+      <h4><span>${d.t}</span><span class="tag green">${d.de}</span></h4>
+      <p>${d.def}</p>
+      <blockquote><p class="ex">${esc(d.ex)}</p><p class="quote-src">${d.src}</p></blockquote>
+      <p class="fn"><b>Wirkung:</b> ${d.fn}</p></article>`).join("") : `<p class="muted">Kein Treffer für „${esc(state.glossQ)}“. Versuche einen englischen Begriff oder einen Stücktitel.</p>`;
+  };
+  document.getElementById("g-q").addEventListener("input", e=>{ state.glossQ=e.target.value; draw(); });
+  document.querySelectorAll("#g-cats .chip").forEach(b=>b.addEventListener("click",()=>{
+    state.glossCat=b.dataset.c; document.querySelectorAll("#g-cats .chip").forEach(x=>x.setAttribute("aria-pressed", x===b)); draw();
+  }));
+  draw();
+};
+
+VIEWS.werke = () => `
+  <header class="page-head"><span class="eyebrow">Kapitel 5</span><h1>Die Stücke</h1><p class="lead">Handlung Akt für Akt, Figuren, Themen, Schlüsselzitate mit Kurzanalyse und Verfilmungen. Zitatangaben: Akt.Szene.</p></header>
+  <div class="row" id="play-chips">${PLAYS.map(p=>`<button class="chip" data-p="${p.id}" aria-pressed="${p.id===state.play}">${p.title}</button>`).join("")}</div>
+  <div id="play-body" class="stack" style="gap:28px"></div>`;
+AFTER.werke = () => {
+  const body = document.getElementById("play-body");
+  const labels = ["Exposition","Rising action","Climax","Falling action","Ending"];
+  const draw = () => {
+    const p = PLAYS.find(x=>x.id===state.play);
+    body.innerHTML = `
+    <section class="section">
+      <div class="play-head"><div class="stack" style="gap:6px"><h2>${p.title}</h2><div class="row"><span class="tag gold">${p.genre}</span><span class="tag">${p.year}</span><span class="tag">${p.setting}</span></div></div></div>
+      <p class="lead" style="max-width:70ch">${p.gist}</p>
+    </section>
+    <section class="section"><h3>Handlung Akt für Akt</h3>
+      <div class="panel acts">${p.acts.map((a,i)=>`<div class="act ${p.turn===i+1?"turn":""}"><div class="no">${["I","II","III","IV","V"][i]}<small>${p.turn===i+1?"Wendepunkt":labels[i]}</small></div><p>${a}</p></div>`).join("")}</div>
+    </section>
+    <section class="section"><h3>Figuren</h3>
+      <div class="table-wrap"><table><tbody>${p.chars.map(c=>`<tr><td style="white-space:nowrap"><b>${c[0]}</b></td><td>${c[1]}</td></tr>`).join("")}</tbody></table></div>
+    </section>
+    <section class="section"><h3>Themen & Motive</h3><div class="row">${p.themes.map(t=>`<span class="tag green">${t}</span>`).join("")}</div></section>
+    <section class="section"><h3>Schlüsselzitate</h3>
+      <div class="grid g2">${p.quotes.map(q=>`<div class="panel stack"><blockquote><p class="quote">${esc(q[0])}</p><p class="quote-src">${q[1]}</p></blockquote><p style="font-size:.95rem">${q[2]}</p></div>`).join("")}</div>
+    </section>
+    <section class="section"><h3>Verfilmungen</h3><ul class="bul">${p.films.map(f=>`<li>${f}</li>`).join("")}</ul></section>
+    <div class="tip"><b>Klausur-Tipp:</b> ${p.tip}</div>`;
+  };
+  document.querySelectorAll("#play-chips .chip").forEach(b=>b.addEventListener("click",()=>{
+    state.play=b.dataset.p; store.set("play", state.play);
+    document.querySelectorAll("#play-chips .chip").forEach(x=>x.setAttribute("aria-pressed", x===b)); draw();
+  }));
+  draw();
+};
+
+VIEWS.schemas = () => `
+  <header class="page-head"><span class="eyebrow">Kapitel 6</span><h1>Analyse-Schemas</h1><p class="lead">Für jede Aufgabenart der richtige Aufbau, mit Leitfragen und Formulierungshilfen auf Englisch.</p></header>
+  <section class="section"><h2>Operatoren</h2>
+    <div class="table-wrap"><table><thead><tr><th>AFB</th><th>Operator</th><th>Bedeutung</th><th>Was du tun musst</th></tr></thead><tbody>
+      ${OPERATORS.map(o=>`<tr><td><span class="tag ${o.afb==="I"?"":o.afb==="II"?"green":"gold"}">${o.afb}</span></td><td class="en"><b>${o.op}</b></td><td>${o.de}</td><td>${o.tip}</td></tr>`).join("")}
+    </tbody></table></div>
+    <p class="muted">AFB = Anforderungsbereich. I: Reproduktion (Verstehen), II: Reorganisation und Transfer (Analyse), III: Reflexion und Problemlösung (Bewertung, kreatives Schreiben).</p>
+  </section>
+  <section class="section"><h2>Aufbau nach Aufgabenart</h2>
+    <div class="subtabs" id="schema-tabs">${Object.entries(SCHEMAS).map(([k,v])=>`<button class="chip" data-k="${k}" aria-pressed="${k===state.schema}">${v.name}</button>`).join("")}</div>
+    <div class="panel" id="schema-body"></div>
+  </section>
+  <section class="section"><h2>Der perfekte Analyse-Absatz</h2>
+    <p class="muted">Jeder Absatz im Hauptteil folgt dem Muster <b>Point – Evidence – Explanation – Link</b>. Beispiel zu <span class="en">Romeo and Juliet</span> 2.2:</p>
+    <div class="legend"><span style="color:var(--accent)">Point</span><span style="color:var(--gold)">Evidence</span><span style="color:#5C7BC0">Explanation</span><span style="color:var(--bad)">Link</span></div>
+    <div class="panel sample"><p><mark class="mP">At the beginning of the balcony scene, Romeo idealises Juliet as the centre of his world.</mark> <mark class="mE">He exclaims, “It is the east, and Juliet is the sun” (2.2.3).</mark> <mark class="mX">The metaphor places Juliet above all other people, since the sun is the source of light and life. Furthermore, the light imagery contrasts sharply with the darkness of the night, which suggests that their love shines in a hostile world. The regular iambic pentameter underlines the harmony of his feelings.</mark> <mark class="mL">This shows that Romeo's love is intense and immediate, which already hints at the haste that will later lead to the tragedy.</mark></p></div>
+  </section>
+  <section class="section"><h2>Formulierungshilfen</h2>
+    <div class="grid g3">${PHRASES.map(p=>`<div class="panel stack"><h4>${p[0]}</h4><ul class="bul">${p[1].map(x=>`<li class="${x.startsWith("Verse")?"":"en"}">${esc(x)}</li>`).join("")}</ul></div>`).join("")}</div>
+  </section>
+  <section class="section"><h2>Richtig zitieren</h2>
+    <div class="table-wrap"><table><thead><tr><th>Fall</th><th>Schreibweise</th></tr></thead><tbody>
+      <tr><td>Eine Zeile im Auszug</td><td class="mono">(l. 12)</td></tr>
+      <tr><td>Mehrere Zeilen</td><td class="mono">(ll. 12–15)</td></tr>
+      <tr><td>Ganzes Stück: Akt, Szene, Zeile</td><td class="mono">(3.1.94) oder (III, 1, 94)</td></tr>
+      <tr><td>Versumbruch im Zitat</td><td class="mono">“It is the east, / and Juliet is the sun”</td></tr>
+      <tr><td>Auslassung</td><td class="mono">“Tomorrow, and tomorrow […] / Creeps in this petty pace”</td></tr>
+      <tr><td>Paraphrase statt Zitat</td><td class="mono">(cf. l. 20)</td></tr>
+    </tbody></table></div>
+  </section>`;
+AFTER.schemas = () => {
+  const body = document.getElementById("schema-body");
+  const draw = () => {
+    const s = SCHEMAS[state.schema];
+    body.innerHTML = `<div class="stack"><h3>${s.name}</h3><p class="muted">${s.intro}</p><ol class="steps">${s.steps.map(st=>`<li><div><h4>${st[0]}</h4><p>${st[1]}</p><p class="phrases">${esc(st[2])}</p></div></li>`).join("")}</ol></div>`;
+  };
+  document.querySelectorAll("#schema-tabs .chip").forEach(b=>b.addEventListener("click",()=>{
+    state.schema=b.dataset.k; store.set("schema", state.schema);
+    document.querySelectorAll("#schema-tabs .chip").forEach(x=>x.setAttribute("aria-pressed", x===b)); draw();
+  }));
+  draw();
+};
+
+VIEWS.film = () => {
+  const cats = [...new Set(FILM_TERMS.map(f=>f.cat))];
+  return `
+  <header class="page-head"><span class="eyebrow">Kapitel 7</span><h1>Filmanalyse</h1><p class="lead">Verfilmungen deuten Shakespeare für ein neues Publikum. Du brauchst das Vokabular der Filmsprache und immer die Frage: Welche Wirkung hat das?</p></header>
+  ${cats.map(c=>`<section class="section"><h2>${c}</h2>
+    <div class="table-wrap"><table><thead><tr><th>Term</th><th>Deutsch</th><th>Was man sieht / hört</th><th>Typische Wirkung</th></tr></thead><tbody>
+    ${FILM_TERMS.filter(f=>f.cat===c).map(f=>`<tr><td class="en"><b>${f.t}</b></td><td>${f.de}</td><td>${f.def}</td><td>${f.fn}</td></tr>`).join("")}
+    </tbody></table></div></section>`).join("")}
+  <section class="section"><h2>Text und Film vergleichen</h2>
+    <div class="grid g2">
+      <div class="panel stack"><h4>Leitfragen</h4><ul class="bul">
+        <li>Was wurde gekürzt, verändert, hinzugefügt?</li>
+        <li>Wie wird der Soliloquy umgesetzt (Voice-over, Blick in die Kamera, Close-up)?</li>
+        <li>Wie werden Ort und Zeit modernisiert?</li>
+        <li>Wie werden Figuren durch Kostüm, Besetzung und Spiel gedeutet?</li>
+        <li>Für welches Publikum ist der Film gemacht, und wirkt er auf junge Zuschauer?</li></ul></div>
+      <div class="panel stack"><h4>Beispiel: Luhrmanns <span class="en">Romeo + Juliet</span> (1996)</h4><ul class="bul">
+        <li>Prolog als Fernsehnachricht (Nachrichtensprecherin)</li>
+        <li>Schwerter werden zu Pistolen mit Markennamen „Sword“, „Dagger“</li>
+        <li>Erste Begegnung durch ein Aquarium: Wasser als Motiv</li>
+        <li>Balkonszene im Swimmingpool; schnelle Schnitte und Popmusik</li>
+        <li>Originalsprache bleibt – Kontrast von alter Sprache und moderner Welt</li></ul></div>
+    </div>
+  </section>`;
+};
+
+VIEWS.karten = () => `
+  <header class="page-head"><span class="eyebrow">Training</span><h1>Karteikarten</h1><p class="lead">Karte antippen zum Umdrehen. Markiere, was du schon kannst. Dein Stand wird in diesem Browser gespeichert.</p></header>
+  <div class="row" id="fc-cats">${["Alle","Stilmittel","Drama","Film"].map(c=>`<button class="chip" data-c="${c}" aria-pressed="${c===state.fcCat}">${c}</button>`).join("")}</div>
+  <div class="fc-wrap" id="fc"></div>`;
+AFTER.karten = () => {
+  const all = [
+    ...DEVICES.map(d=>({k:"s:"+d.t, cat:"Stilmittel", front:d.t, back:`<b>${d.de}</b><p>${d.def}</p><p class="quote" style="font-size:1rem">${esc(d.ex)}</p><p class="muted" style="font-size:.9rem">${d.fn}</p>`})),
+    ...DRAMA_TERMS.map(d=>({k:"d:"+d.t, cat:"Drama", front:d.t, back:`<b>${d.de}</b><p>${d.def}</p>${d.ex?`<p class="muted">${d.ex}</p>`:""}`})),
+    ...FILM_TERMS.map(d=>({k:"f:"+d.t, cat:"Film", front:d.t, back:`<b>${d.de}</b><p>${d.def}</p><p class="muted">${d.fn}</p>`}))
+  ];
+  const box = document.getElementById("fc");
+  const deck = () => { const d = all.filter(c=>state.fcCat==="Alle"||c.cat===state.fcCat); const open = d.filter(c=>!state.known.has(c.k)); return {d, open}; };
+  const draw = () => {
+    const {d, open} = deck();
+    const known = d.length - open.length;
+    if(!open.length){
+      box.innerHTML = `<div class="panel stack"><h3>Alle ${d.length} Karten gewusst!</h3><p class="muted">Stark. Setze den Stapel zurück, um erneut zu üben.</p><div class="row"><button class="btn primary" id="fc-reset">Stapel zurücksetzen</button></div></div>`;
+      box.querySelector("#fc-reset").addEventListener("click",()=>{ d.forEach(c=>state.known.delete(c.k)); store.set("known",[...state.known]); state.fcIdx=0; draw(); });
+      return;
+    }
+    state.fcIdx = state.fcIdx % open.length;
+    const c = open[state.fcIdx];
+    box.innerHTML = `
+      <div class="row" style="justify-content:space-between"><span class="muted">${known} von ${d.length} gewusst · noch ${open.length}</span><span class="tag">${c.cat}</span></div>
+      <div class="meter"><i style="width:${Math.round(known/d.length*100)}%"></i></div>
+      <div class="fc" id="fc-card" tabindex="0" role="button" aria-label="Karte umdrehen">
+        <div class="fc-inner"><div class="fc-face"><span class="eyebrow">Begriff</span><span class="big">${c.front}</span><span class="fc-hint">Antippen zum Umdrehen</span></div>
+        <div class="fc-face back">${c.back}</div></div></div>
+      <div class="row"><button class="btn" id="fc-again">Nochmal</button><button class="btn primary" id="fc-know">Kann ich</button><button class="btn" id="fc-shuffle" style="margin-left:auto">Mischen</button></div>`;
+    const card = box.querySelector("#fc-card");
+    const flip = () => card.classList.toggle("flip");
+    card.addEventListener("click", flip);
+    card.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); flip(); } });
+    box.querySelector("#fc-again").addEventListener("click",()=>{ state.fcIdx++; draw(); });
+    box.querySelector("#fc-know").addEventListener("click",()=>{ state.known.add(c.k); store.set("known",[...state.known]); draw(); });
+    box.querySelector("#fc-shuffle").addEventListener("click",()=>{ state.fcIdx=Math.floor(Math.random()*open.length); draw(); });
+  };
+  document.querySelectorAll("#fc-cats .chip").forEach(b=>b.addEventListener("click",()=>{
+    state.fcCat=b.dataset.c; state.fcIdx=0; document.querySelectorAll("#fc-cats .chip").forEach(x=>x.setAttribute("aria-pressed", x===b)); draw();
+  }));
+  draw();
+};
+
+VIEWS.quiz = () => `
+  <header class="page-head"><span class="eyebrow">Training</span><h1>Quiz</h1><p class="lead">Zehn zufällige Fragen aus ${QUIZ.length} zu Kontext, Struktur, Vers, Stilmitteln, Stücken und Film. Jede Antwort wird erklärt.</p></header>
+  <div class="panel stack" id="quiz" style="max-width:720px"></div>`;
+AFTER.quiz = () => {
+  const box = document.getElementById("quiz");
+  const start = () => { state.quiz = {qs: shuffle(QUIZ).slice(0,10).map(q=>{ const idx = shuffle(q.o.map((_,i)=>i)); return {...q, o: idx.map(i=>q.o[i]), a: idx.indexOf(q.a)}; }), i:0, res:[]}; draw(); };
+  const draw = () => {
+    const z = state.quiz;
+    const prog = `<div class="q-prog">${z.qs.map((_,i)=>`<i class="${z.res[i]===true?"ok":z.res[i]===false?"no":i===z.i?"cur":""}"></i>`).join("")}</div>`;
+    if(z.i>=z.qs.length){
+      const score = z.res.filter(Boolean).length;
+      if(state.best===null || score>state.best){ state.best=score; store.set("best",score); }
+      const msg = score>=9?"Ausgezeichnet, du bist klausurbereit.":score>=7?"Gut! Schau dir die falschen Themen noch einmal an.":score>=5?"Solide Basis. Wiederhole die Kapitel, in denen du unsicher warst.":"Arbeite den Lernpfad noch einmal durch und versuch es erneut.";
+      box.innerHTML = `${prog}<span class="eyebrow">Ergebnis</span><h2 style="font-variant-numeric:tabular-nums">${score} von 10</h2><p>${msg}</p><p class="muted">Bestes Ergebnis: ${state.best}/10</p><div class="row"><button class="btn primary" id="q-new">Neue Runde</button><a class="btn" href="#karten">Zu den Karteikarten</a></div>`;
+      box.querySelector("#q-new").addEventListener("click", start);
+      return;
+    }
+    const q = z.qs[z.i];
+    box.innerHTML = `${prog}<span class="eyebrow">Frage ${z.i+1} von 10</span><h3>${esc(q.q)}</h3>
+      <div class="q-opts">${q.o.map((o,i)=>`<button class="q-opt" data-i="${i}">${esc(o)}</button>`).join("")}</div><div id="q-fb"></div>`;
+    box.querySelectorAll(".q-opt").forEach(b=>b.addEventListener("click",()=>{
+      const i=+b.dataset.i, ok=i===q.a; z.res[z.i]=ok;
+      box.querySelectorAll(".q-opt").forEach((x,j)=>{ x.disabled=true; if(j===q.a) x.classList.add("right"); else if(j===i) x.classList.add("wrong"); });
+      box.querySelector("#q-fb").innerHTML = `<div class="feedback ${ok?"ok":"no"}" style="margin-top:4px"><b>${ok?"Richtig.":"Leider falsch."}</b> ${esc(q.e)}</div><div class="row" style="margin-top:10px"><button class="btn primary" id="q-next">${z.i===9?"Auswertung":"Weiter"}</button></div>`;
+      box.querySelector("#q-next").addEventListener("click",()=>{ z.i++; draw(); });
+      box.querySelector(".q-prog").outerHTML = `<div class="q-prog">${z.qs.map((_,k)=>`<i class="${z.res[k]===true?"ok":z.res[k]===false?"no":k===z.i?"cur":""}"></i>`).join("")}</div>`;
+      box.querySelector("#q-next").focus();
+    }));
+  };
+  if(!state.quiz || state.quiz.i>=10) start(); else draw();
+};
+
+VIEWS.klausur = () => `
+  <header class="page-head"><span class="eyebrow">Anwendung</span><h1>Klausur-Check</h1><p class="lead">Zeitplan und Checkliste für die Analyseklausur. Hake beim Üben ab, was du schon sicher beherrschst.</p></header>
+  <section class="section"><h2>Zeitplan für eine Klausur (Beispiel: 180 Minuten)</h2>
+    <div class="timeline" role="img" aria-label="Zeitplan: 20 Minuten lesen, 20 Minuten gliedern, 120 Minuten schreiben, 20 Minuten korrigieren">
+      <div style="flex:20;background:var(--gold)">Lesen</div><div style="flex:20;background:#5C7BC0">Planen</div><div style="flex:120;background:var(--accent)">Schreiben</div><div style="flex:20;background:var(--bad)">Prüfen</div>
+    </div>
+    <div class="grid g2">
+      <div class="panel stack"><h4>Lesen & Markieren (ca. 20 Min.)</h4><p>Aufgaben zuerst lesen, Operatoren unterstreichen. Text zweimal lesen, Stilmittel und Schlüsselstellen am Rand markieren.</p></div>
+      <div class="panel stack"><h4>Planen (ca. 20 Min.)</h4><p>Stichpunkt-Gliederung pro Aufgabe; Zitate mit Zeilen notieren; Leitthese formulieren.</p></div>
+      <div class="panel stack"><h4>Schreiben (ca. 120 Min.)</h4><p>Gewichtung nach Punkten: Die Analyse (AFB II) bringt meist die meisten Punkte, danach AFB III.</p></div>
+      <div class="panel stack"><h4>Korrigieren (ca. 20 Min.)</h4><p>Typische Fehler: <i>s</i> bei 3. Person, <i>its/it's</i>, <i>their/there</i>, Zeitformen, Kommas bei <i>which</i>.</p></div>
+    </div>
+    <p class="muted">Passe die Zeiten an deine Klausurdauer an. Die Anteile bleiben gleich.</p>
+  </section>
+  <section class="section"><h2>Checkliste</h2>
+    <div class="panel" id="checks">${CHECKLIST.map((c,i)=>`<label class="check" for="chk-${i}"><input type="checkbox" id="chk-${i}" data-i="${i}" ${state.checks.has(i)?"checked":""}><span>${c}</span></label>`).join("")}</div>
+  </section>
+  <section class="section"><h2>Die häufigsten Fehler</h2>
+    <div class="table-wrap"><table><thead><tr><th>Fehler</th><th>Besser</th></tr></thead><tbody>
+      <tr><td>Nacherzählen statt analysieren</td><td>Jede Aussage an Mittel und Wirkung koppeln</td></tr>
+      <tr><td>„There is a metaphor in line 5.“</td><td>“The metaphor ‘…’ (l. 5) illustrates / emphasises …”</td></tr>
+      <tr><td>Wirkung: „It makes it more interesting.“</td><td>Konkret: Welche Gefühle, welches Bild, welche Deutung?</td></tr>
+      <tr><td>Vergangenheitsform</td><td>Literarisches Präsens: “Romeo kills Tybalt.”</td></tr>
+      <tr><td>Meinung im Analyseteil</td><td>Eigene Wertung nur bei comment, discuss, evaluate</td></tr>
+      <tr><td>Zitate ohne Stellenangabe</td><td>Immer (l. …) oder (Akt.Szene.Zeile)</td></tr>
+      <tr><td>Figuren als reale Menschen behandeln</td><td>“Shakespeare presents Macbeth as …”</td></tr>
+    </tbody></table></div>
+  </section>
+  <p class="foot">Zitate folgen gängigen modernen Ausgaben; Zeilenzählung kann je nach Edition abweichen. Prüfe Stellenangaben immer in eurer Schulausgabe.</p>`;
+AFTER.klausur = () => {
+  document.querySelectorAll("#checks input").forEach(c=>c.addEventListener("change",()=>{
+    const i=+c.dataset.i; if(c.checked) state.checks.add(i); else state.checks.delete(i); store.set("checks",[...state.checks]);
+  }));
+};
+
+window.addEventListener("hashchange", route);
+route();
+</script>
+</body>
+</html>
